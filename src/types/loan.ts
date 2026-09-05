@@ -13,7 +13,6 @@ export interface Loan {
   status: LoanStatus;
 }
 
-
 // DTO para criação de empréstimo
 export interface CreateLoanDTO {
   userId: number;
