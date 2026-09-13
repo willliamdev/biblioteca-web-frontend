@@ -1,4 +1,13 @@
-import { AppShell, Burger, Button, Group, Stack, Text, Title, useMantineColorScheme } from '@mantine/core';
+import {
+  AppShell,
+  Burger,
+  Button,
+  Group,
+  Stack,
+  Text,
+  Title,
+  useMantineColorScheme,
+} from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useState } from 'react';
 import { BookFormModal } from './components/BookFormModal';
@@ -61,10 +70,20 @@ export default function App() {
         return (
           <Stack gap="lg">
             <Title order={1}>Dashboard</Title>
-            <Button onClick={openBookModal} color="blue" style={{ alignSelf: 'flex-start' }}>
-              Cadastrar Novo Livro
-            </Button>
+            <Text c="dimmed" size="sm">
+              Bem vindo ao sistema de gerenciamento da biblioteca!
+            </Text>
             <StatsContainer data={mockDashboardStatsData} />
+            <div>
+              <Title order={2} size="h3" mb="sm">
+                Ações Rápidas
+              </Title>
+              <Group justify="flex-start" align="center">
+                <Button onClick={openBookModal} color="blue" style={{ alignSelf: 'flex-start' }}>
+                  + Cadastrar Novo Livro
+                </Button>
+              </Group>
+            </div>
           </Stack>
         );
     }
@@ -83,12 +102,8 @@ export default function App() {
         <Group h="100%" px="md" justify="space-between">
           <Group gap="sm">
             <Burger opened={navbarOpened} onClick={toggle} hiddenFrom="sm" size="sm" />
-            <Stack gap={2}>
-              <Title order={2}>Sistema de Gestão Biblioteca</Title>
-              <Text c="dimmed" size="sm">
-                Bem vindo ao sistema de gerenciamento da biblioteca!
-              </Text>
-            </Stack>
+
+            <Title order={2}>Sistema de Gestão Biblioteca</Title>
           </Group>
 
           <Button
@@ -123,7 +138,9 @@ export default function App() {
       </AppShell.Navbar>
 
       <AppShell.Main>
-        <div style={{ width: '100%', maxWidth: 1100, margin: '20px auto 0px' }}>{renderContent()}</div>
+        <div style={{ width: '100%', maxWidth: 1100, margin: '20px auto 0px' }}>
+          {renderContent()}
+        </div>
       </AppShell.Main>
 
       <BookFormModal opened={bookModalOpened} onClose={closeBookModal} />
