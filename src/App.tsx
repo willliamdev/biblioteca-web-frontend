@@ -10,10 +10,10 @@ export default function App() {
   return (
     <Container size="sm" py="xl">
       <Title order={1} mb="md">
-        Biblioteca dos Guri
+        Dashboard
       </Title>
+      <p>Bem vindo ao sistema de gerenciamento da biblioteca!</p>
       <Group mb="xl" justify="center">
-        {/* total de livros, total emprestimos, empréstimos atrasados */}
         <StatsContainer data={mockDashboardStatsData} />
       </Group>
       <Group>
