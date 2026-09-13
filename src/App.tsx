@@ -113,7 +113,6 @@ export default function App() {
         </div>
       </AppShell.Main>
 
-
       <AppShell.Footer p="sm">
         <Group justify="space-between" align="center">
           <Text size="xs" c="dimmed">
@@ -129,7 +128,6 @@ export default function App() {
           </Button>
         </Group>
       </AppShell.Footer>
-
 
       <BookFormModal opened={bookModalOpened} onClose={closeBookModal} />
       <UserFormModal opened={userModalOpened} onClose={closeUserModal} />
