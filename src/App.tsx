@@ -1,8 +1,8 @@
 import { Button, Container, Title, Group } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { BookFormModal } from './components/BookFormModal';
-import { WidgetContainer } from './components/WidgetContainer';
-import { mockDashboardData } from './services/mockData';
+import { StatsContainer } from './components/StatusContainer';
+import { mockDashboardStatsData } from './services/mockData';
 
 export default function App() {
   const [opened, { open, close }] = useDisclosure(false);
@@ -14,7 +14,7 @@ export default function App() {
       </Title>
       <Group mb="xl" justify="center">
         {/* total de livros, total emprestimos, empréstimos atrasados */}
-        <WidgetContainer data={mockDashboardData} />
+        <StatsContainer data={mockDashboardStatsData} />
       </Group>
       <Group>
         <Button onClick={open} color="blue">

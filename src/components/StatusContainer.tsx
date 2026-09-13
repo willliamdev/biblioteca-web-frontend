@@ -1,16 +1,16 @@
 import { SimpleGrid } from '@mantine/core';
-import { Widget } from './Widget';
-import type { WidgetProps } from './Widget';
+import { StatsCard } from './StatsCard';
+import type { StatsProps } from './StatsCard';
 
-interface WidgetContainerProps {
-  data: WidgetProps[];
+interface StatsContainerProps {
+  data: StatsProps[];
 }
 
-export function WidgetContainer({ data }: WidgetContainerProps) {
+export function StatsContainer({ data }: StatsContainerProps) {
   return (
     <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing={{ base: 'sm', md: 'lg' }} w="100%">
       {data.map((item) => (
-        <Widget
+        <StatsCard
           key={item.title}
           title={item.title}
           value={item.value}

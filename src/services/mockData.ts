@@ -1,7 +1,7 @@
 import type { Book, Author, Genre } from '../types/book';
 import type { Loan } from '../types/loan';
 import type { User } from '../types/user';
-import type { WidgetProps } from '../components/Widget';
+import type { StatsProps } from '../components/StatsCard';
 
 export const mockUsuarios: User[] = [
   {
@@ -90,7 +90,7 @@ export const mockEmprestimos: Loan[] = [
   },
 ];
 
-export const mockDashboardData: WidgetProps[] = [
+export const mockDashboardStatsData: StatsProps[] = [
   {
     title: 'Total de Livros',
     value: mockLivros.length,
