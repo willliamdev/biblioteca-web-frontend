@@ -4,6 +4,7 @@ import {
   Button,
   Group,
   Stack,
+  Text,
   Title,
   useMantineColorScheme,
 } from '@mantine/core';
@@ -79,20 +80,9 @@ export default function App() {
       padding="md"
     >
       <AppShell.Header>
-        <Group h="100%" px="md" justify="space-between">
-          <Group gap="sm">
-            <Burger opened={navbarOpened} onClick={toggle} hiddenFrom="sm" size="sm" />
-
-            <Title order={2}>Sistema de Gestão Biblioteca</Title>
-          </Group>
-
-          <Button
-            variant={colorScheme === 'dark' ? 'light' : 'default'}
-            onClick={() => toggleColorScheme()}
-            size="compact-sm"
-          >
-            {colorScheme === 'dark' ? 'Tema claro' : 'Tema escuro'}
-          </Button>
+        <Group h="100%" px="md" justify="flex-start">
+          <Burger opened={navbarOpened} onClick={toggle} hiddenFrom="sm" size="sm" />
+          <Title size="h2">Gestão da Biblioteca</Title>
         </Group>
       </AppShell.Header>
 
@@ -117,11 +107,29 @@ export default function App() {
         </AppShell.Section>
       </AppShell.Navbar>
 
-      <AppShell.Main>
-        <div style={{ width: '100%', maxWidth: 1100, margin: '20px auto 0px' }}>
+      <AppShell.Main flex={1}>
+        <div style={{ width: '100%', height: '100%', maxWidth: 1100, margin: '20px auto 0px' }}>
           {renderContent()}
         </div>
       </AppShell.Main>
+
+
+      <AppShell.Footer p="sm">
+        <Group justify="space-between" align="center">
+          <Text size="xs" c="dimmed">
+            © 2026 Biblioteca
+          </Text>
+
+          <Button
+            variant={colorScheme === 'dark' ? 'light' : 'default'}
+            onClick={() => toggleColorScheme()}
+            size="compact-sm"
+          >
+            {colorScheme === 'dark' ? 'Tema claro' : 'Tema escuro'}
+          </Button>
+        </Group>
+      </AppShell.Footer>
+
 
       <BookFormModal opened={bookModalOpened} onClose={closeBookModal} />
       <UserFormModal opened={userModalOpened} onClose={closeUserModal} />
