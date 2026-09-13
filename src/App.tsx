@@ -1,4 +1,4 @@
-import { AppShell, Burger, Button, Group, Stack, Text, Title } from '@mantine/core';
+import { AppShell, Burger, Button, Group, Stack, Text, Title, useMantineColorScheme } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useState } from 'react';
 import { BookFormModal } from './components/BookFormModal';
@@ -12,6 +12,7 @@ import { mockDashboardStatsData } from './services/mockData';
 type View = 'dashboard' | 'books' | 'users' | 'loans';
 
 export default function App() {
+  const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   const [navbarOpened, { close: closeNavbar, toggle }] = useDisclosure(false);
   const [bookModalOpened, { open: openBookModal, close: closeBookModal }] = useDisclosure(false);
   const [userModalOpened, { open: openUserModal, close: closeUserModal }] = useDisclosure(false);
@@ -79,14 +80,24 @@ export default function App() {
       padding="md"
     >
       <AppShell.Header>
-        <Group h="100%" px="md">
-          <Burger opened={navbarOpened} onClick={toggle} hiddenFrom="sm" size="sm" />
-          <Stack gap={2}>
-            <Title order={2}>Sistema de Gestão Biblioteca</Title>
-            <Text c="dimmed" size="sm">
-              Bem vindo ao sistema de gerenciamento da biblioteca!
-            </Text>
-          </Stack>
+        <Group h="100%" px="md" justify="space-between">
+          <Group gap="sm">
+            <Burger opened={navbarOpened} onClick={toggle} hiddenFrom="sm" size="sm" />
+            <Stack gap={2}>
+              <Title order={2}>Sistema de Gestão Biblioteca</Title>
+              <Text c="dimmed" size="sm">
+                Bem vindo ao sistema de gerenciamento da biblioteca!
+              </Text>
+            </Stack>
+          </Group>
+
+          <Button
+            variant={colorScheme === 'dark' ? 'light' : 'default'}
+            onClick={() => toggleColorScheme()}
+            size="compact-sm"
+          >
+            {colorScheme === 'dark' ? 'Tema claro' : 'Tema escuro'}
+          </Button>
         </Group>
       </AppShell.Header>
 
