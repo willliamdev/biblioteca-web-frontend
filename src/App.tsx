@@ -4,7 +4,6 @@ import {
   Button,
   Group,
   Stack,
-  Text,
   Title,
   useMantineColorScheme,
 } from '@mantine/core';
@@ -12,11 +11,10 @@ import { useDisclosure } from '@mantine/hooks';
 import { useState } from 'react';
 import { BookFormModal } from './components/BookFormModal';
 import { UserFormModal } from './components/UserFormModal';
-import { LoansPage } from './pages/LoansPage';
 import { BooksPage } from './pages/BooksPage';
+import { DashboardPage } from './pages/DashboardPage';
+import { LoansPage } from './pages/LoansPage';
 import { UsersPage } from './pages/UsersPage';
-import { StatsContainer } from './components/StatusContainer';
-import { mockDashboardStatsData } from './services/mockData';
 
 type View = 'dashboard' | 'books' | 'users' | 'loans';
 
@@ -67,25 +65,7 @@ export default function App() {
       case 'loans':
         return <LoansPage />;
       default:
-        return (
-          <Stack gap="lg">
-            <Title order={1}>Dashboard</Title>
-            <Text c="dimmed" size="sm">
-              Bem vindo ao sistema de gerenciamento da biblioteca!
-            </Text>
-            <StatsContainer data={mockDashboardStatsData} />
-            <div>
-              <Title order={2} size="h3" mb="sm">
-                Ações Rápidas
-              </Title>
-              <Group justify="flex-start" align="center">
-                <Button onClick={openBookModal} color="blue" style={{ alignSelf: 'flex-start' }}>
-                  + Cadastrar Novo Livro
-                </Button>
-              </Group>
-            </div>
-          </Stack>
-        );
+        return <DashboardPage onAddBook={openBookModal} />;
     }
   };
 
