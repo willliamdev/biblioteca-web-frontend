@@ -90,8 +90,7 @@ export const mockEmprestimos: Loan[] = [
   },
 ];
 
-
-export const mockDashboardData: WidgetProps[] =  [
+export const mockDashboardData: WidgetProps[] = [
   {
     title: 'Total de Livros',
     value: mockLivros.length,
@@ -99,13 +98,13 @@ export const mockDashboardData: WidgetProps[] =  [
   },
   {
     title: 'Empréstimos Ativos',
-    value: mockEmprestimos.filter(loan => loan.status === 'ATIVO').length,
+    value: mockEmprestimos.filter((loan) => loan.status === 'ATIVO').length,
     description: 'livros emprestados',
   },
   {
     title: 'Empréstimos em Atraso',
-    value: mockEmprestimos.filter(loan => loan.status === 'ATRASADO').length,
+    value: mockEmprestimos.filter((loan) => loan.status === 'ATRASADO').length,
     description: 'livros em atraso',
     color: 'red',
-  }
+  },
 ];
