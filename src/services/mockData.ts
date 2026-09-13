@@ -1,6 +1,7 @@
 import type { Book, Author, Genre } from '../types/book';
 import type { Loan } from '../types/loan';
 import type { User } from '../types/user';
+import type { WidgetProps } from '../components/Widget';
 
 export const mockUsuarios: User[] = [
   {
@@ -87,4 +88,24 @@ export const mockEmprestimos: Loan[] = [
     book: mockLivros[2],
     status: 'ATIVO',
   },
+];
+
+
+export const mockDashboardData: WidgetProps[] =  [
+  {
+    title: 'Total de Livros',
+    value: mockLivros.length,
+    description: 'exemplares cadastrados',
+  },
+  {
+    title: 'Empréstimos Ativos',
+    value: mockEmprestimos.filter(loan => loan.status === 'ATIVO').length,
+    description: 'livros emprestados',
+  },
+  {
+    title: 'Empréstimos em Atraso',
+    value: mockEmprestimos.filter(loan => loan.status === 'ATRASADO').length,
+    description: 'livros em atraso',
+    color: 'red',
+  }
 ];
