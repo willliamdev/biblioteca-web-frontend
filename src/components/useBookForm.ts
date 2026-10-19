@@ -4,9 +4,9 @@ import { notifications } from '@mantine/notifications';
 export interface BookFormData {
   title: string;
   author: string;
-  isbn: string;
   category: string;
-  copies: number;
+  publicationDate: string;
+  publisher: string;
 }
 
 export function useBookForm() {
@@ -14,18 +14,18 @@ export function useBookForm() {
     initialValues: {
       title: '',
       author: '',
-      isbn: '',
       category: '',
-      copies: 1,
+      publicationDate: '',
+      publisher: '',
     },
 
     validate: {
       title: (value) =>
         value.trim().length < 2 ? 'O título deve ter pelo menos 2 caracteres' : null,
       author: (value) => (value.trim().length < 2 ? 'Informe o nome do autor' : null),
-      isbn: (value) => (value.trim().length < 10 ? 'ISBN inválido (mínimo 10 caracteres)' : null),
       category: (value) => (!value ? 'Selecione uma categoria' : null),
-      copies: (value) => (value < 1 ? 'Deve haver pelo menos 1 exemplar' : null),
+      publicationDate: (value) => (!value ? 'Informe a data de lançamento' : null),
+      publisher: (value) => (value.trim().length < 2 ? 'Informe o nome da editora' : null),
     },
   });
 
@@ -33,12 +33,12 @@ export function useBookForm() {
     form.reset();
   };
 
-  const submitForm = (values: BookFormData, onSuccess?: () => void) => {
-    console.log('Submit book payload:', values);
-
+  const submitForm = (values: BookFormData, isEditing: boolean, onSuccess?: () => void) => {
     notifications.show({
       title: 'Sucesso!',
-      message: `O livro "${values.title}" foi cadastrado com sucesso.`,
+      message: isEditing
+        ? `O livro "${values.title}" foi atualizado com sucesso.`
+        : `O livro "${values.title}" foi cadastrado com sucesso.`,
       color: 'green',
     });
 
