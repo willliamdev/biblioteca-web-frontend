@@ -9,13 +9,17 @@ import {
   useMantineColorScheme,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
+import { notifications } from '@mantine/notifications';
 import { useState } from 'react';
 import { BookFormModal } from './components/BookFormModal';
+import type { Book } from './types/book';
+import type { BookFormData } from './components/useBookForm';
 import { UserFormModal } from './components/UserFormModal';
 import { BooksPage } from './pages/BooksPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { LoansPage } from './pages/LoansPage';
 import { UsersPage } from './pages/UsersPage';
+import { mockLivros } from './services/mockData';
 
 type View = 'dashboard' | 'books' | 'users' | 'loans';
 
@@ -25,6 +29,99 @@ export default function App() {
   const [bookModalOpened, { open: openBookModal, close: closeBookModal }] = useDisclosure(false);
   const [userModalOpened, { open: openUserModal, close: closeUserModal }] = useDisclosure(false);
   const [activeView, setActiveView] = useState<View>('dashboard');
+  const [books, setBooks] = useState<Book[]>(mockLivros);
+  const [editingBook, setEditingBook] = useState<Book | null>(null);
+
+  const handleCreateBook = (values: BookFormData) => {
+    setBooks((currentBooks) => {
+      const authorName = values.author.trim();
+      const genreName = values.category.trim();
+      const author = currentBooks.find(
+        (book) => book.author.name.toLowerCase() === authorName.toLowerCase()
+      )?.author ?? {
+        id: Math.max(0, ...currentBooks.map((book) => book.author.id)) + 1,
+        name: authorName,
+      };
+      const genre = currentBooks.find(
+        (book) => book.genre.name.toLowerCase() === genreName.toLowerCase()
+      )?.genre ?? {
+        id: Math.max(0, ...currentBooks.map((book) => book.genre.id)) + 1,
+        name: genreName,
+      };
+
+      return [
+        ...currentBooks,
+        {
+          id: Math.max(0, ...currentBooks.map((book) => book.id)) + 1,
+          title: values.title.trim(),
+          author,
+          genre,
+          publicationDate: values.publicationDate,
+          publisher: values.publisher.trim(),
+        },
+      ];
+    });
+  };
+
+  const handleUpdateBook = (bookId: number, values: BookFormData) => {
+    setBooks((currentBooks) => {
+      const authorName = values.author.trim();
+      const genreName = values.category.trim();
+      const author = currentBooks.find(
+        (book) => book.author.name.toLowerCase() === authorName.toLowerCase()
+      )?.author ?? {
+        id: Math.max(0, ...currentBooks.map((book) => book.author.id)) + 1,
+        name: authorName,
+      };
+      const genre = currentBooks.find(
+        (book) => book.genre.name.toLowerCase() === genreName.toLowerCase()
+      )?.genre ?? {
+        id: Math.max(0, ...currentBooks.map((book) => book.genre.id)) + 1,
+        name: genreName,
+      };
+
+      return currentBooks.map((book) =>
+        book.id === bookId
+          ? {
+              ...book,
+              title: values.title.trim(),
+              author,
+              genre,
+              publicationDate: values.publicationDate,
+              publisher: values.publisher.trim(),
+            }
+          : book
+      );
+    });
+  };
+
+  const handleDeleteBook = (book: Book) => {
+    if (!window.confirm(`Tem certeza de que deseja excluir "${book.title}"?`)) {
+      return;
+    }
+
+    setBooks((currentBooks) => currentBooks.filter((currentBook) => currentBook.id !== book.id));
+    notifications.show({
+      title: 'Livro excluído',
+      message: `O livro "${book.title}" foi excluído.`,
+      color: 'green',
+    });
+  };
+
+  const handleAddBook = () => {
+    setEditingBook(null);
+    openBookModal();
+  };
+
+  const handleEditBook = (book: Book) => {
+    setEditingBook(book);
+    openBookModal();
+  };
+
+  const handleCloseBookModal = () => {
+    closeBookModal();
+    setEditingBook(null);
+  };
 
   const navLinks = [
     {
@@ -60,7 +157,14 @@ export default function App() {
   const renderContent = () => {
     switch (activeView) {
       case 'books':
-        return <BooksPage onAddBook={openBookModal} />;
+        return (
+          <BooksPage
+            books={books}
+            onAddBook={handleAddBook}
+            onEditBook={handleEditBook}
+            onDeleteBook={handleDeleteBook}
+          />
+        );
       case 'users':
         return <UsersPage onAddUser={openUserModal} />;
       case 'loans':
@@ -129,7 +233,13 @@ export default function App() {
         </Group>
       </AppShell.Footer>
 
-      <BookFormModal opened={bookModalOpened} onClose={closeBookModal} />
+      <BookFormModal
+        opened={bookModalOpened}
+        onClose={handleCloseBookModal}
+        onCreateBook={handleCreateBook}
+        onUpdateBook={handleUpdateBook}
+        bookToEdit={editingBook}
+      />
       <UserFormModal opened={userModalOpened} onClose={closeUserModal} />
     </AppShell>
   );

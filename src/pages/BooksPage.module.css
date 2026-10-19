@@ -1,0 +1,15 @@
+.bookRow .rowActions {
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.bookRow:hover .rowActions,
+.bookRow:focus-within .rowActions {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .bookRow .rowActions {
+    opacity: 1;
+  }
+}
