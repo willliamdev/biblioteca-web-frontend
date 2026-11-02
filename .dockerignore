@@ -4,3 +4,16 @@ dist
 .dockerignore
 Dockerfile
 README.md
+
+# Variáveis locais do Vite: o build da imagem usa só o ARG VITE_API_URL
+.env
+.env.*
+
+# Imagens geradas pelos scripts e arquivos que não entram no build
+images/
+scripts/
+docs/
+.github/
+.vscode/
+.idea/
+*.log

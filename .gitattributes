@@ -1,0 +1,2 @@
+# Scripts shell sempre com LF: rodam no Linux/WSL e quebram com CRLF ("bad interpreter")
+*.sh text eol=lf
