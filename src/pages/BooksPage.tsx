@@ -1,4 +1,4 @@
-import { Button, Group, Stack, Table, Title } from '@mantine/core';
+import { Badge, Button, Group, Stack, Table, Text, Title } from '@mantine/core';
 import dayjs from 'dayjs';
 import styles from './BooksPage.module.css';
 import type { Book } from '../types/book';
@@ -20,7 +20,7 @@ export function BooksPage({ books, onAddBook, onEditBook, onDeleteBook }: BooksP
         </Button>
       </Group>
 
-      <Table.ScrollContainer minWidth={800}>
+      <Table.ScrollContainer minWidth={900}>
         <Table striped highlightOnHover withTableBorder>
           <Table.Thead>
             <Table.Tr>
@@ -29,10 +29,20 @@ export function BooksPage({ books, onAddBook, onEditBook, onDeleteBook }: BooksP
               <Table.Th>Autor</Table.Th>
               <Table.Th>Lançamento</Table.Th>
               <Table.Th>Editora</Table.Th>
+              <Table.Th>Situação</Table.Th>
               <Table.Th>Ações</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
+            {books.length === 0 ? (
+              <Table.Tr>
+                <Table.Td colSpan={7}>
+                  <Text c="dimmed" ta="center" size="sm">
+                    Nenhum livro cadastrado.
+                  </Text>
+                </Table.Td>
+              </Table.Tr>
+            ) : null}
             {books.map((book) => (
               <Table.Tr key={book.id} className={styles.bookRow}>
                 <Table.Td>{book.title}</Table.Td>
@@ -40,6 +50,11 @@ export function BooksPage({ books, onAddBook, onEditBook, onDeleteBook }: BooksP
                 <Table.Td>{book.author.name}</Table.Td>
                 <Table.Td>{dayjs(book.publicationDate).format('DD/MM/YYYY')}</Table.Td>
                 <Table.Td>{book.publisher}</Table.Td>
+                <Table.Td>
+                  <Badge color={book.available ? 'green' : 'orange'} variant="light">
+                    {book.available ? 'Disponível' : 'Emprestado'}
+                  </Badge>
+                </Table.Td>
                 <Table.Td>
                   <Group gap="xs" className={styles.rowActions} wrap="nowrap">
                     <Button

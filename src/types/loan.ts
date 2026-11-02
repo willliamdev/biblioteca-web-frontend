@@ -7,6 +7,9 @@ export interface Loan {
   id: number;
   startDate: string;
   endDate: string;
+  // Data efetiva da devolução (null enquanto o livro não foi devolvido). A API sempre
+  // preenche o campo; ele é opcional apenas para manter src/services/mockData.ts válido.
+  returnDate?: string | null;
   user: User;
   book: Book;
   // Auxiliar para UI
@@ -19,4 +22,9 @@ export interface CreateLoanDTO {
   bookId: number;
   startDate: string;
   endDate: string;
+}
+
+// DTO para registrar devolução (sem returnDate, a API considera a data de hoje)
+export interface ReturnLoanDTO {
+  returnDate?: string | null;
 }
