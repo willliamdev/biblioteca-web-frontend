@@ -1,0 +1,45 @@
+# =============================================================================
+# Frontend da biblioteca (somente o site: React servido pelo Nginx).
+# O backend tem o próprio docker-compose.yml, no repositório library-backend.
+#
+# Os dois rodam em containers separados e se enxergam por uma rede Docker compartilhada,
+# a "biblioteca-net", que precisa existir (crie uma única vez):
+#   docker network create biblioteca-net
+#
+# Uso (a partir desta pasta):
+#   docker compose up -d --build   # builda a imagem e sobe o site
+#   docker compose up -d           # reaproveita a imagem existente (ex.: carregada com docker load)
+#   docker compose logs -f         # acompanha os logs
+#   docker compose down            # derruba o site
+#
+# Variáveis opcionais (no ambiente ou em um arquivo .env ao lado deste arquivo):
+#   FRONTEND_PORT   porta do host para o site                                (padrão: 8081)
+#   API_UPSTREAM    destino do proxy /api do Nginx, sem barra no final       (padrão: http://library-backend:8080)
+#   VITE_API_URL    URL base da API embutida no bundle (só vale no build)    (padrão: /api)
+#
+# O site chama /api/... no próprio Nginx, que repassa ao backend removendo o prefixo /api.
+# O Nginx sobe mesmo sem o backend; as chamadas /api respondem 502 até a API ficar de pé.
+# Com o backend fora do Docker, informe um IP alcançável em API_UPSTREAM.
+# =============================================================================
+
+name: biblioteca-web-frontend
+
+services:
+  biblioteca-web-frontend:
+    image: biblioteca-web-frontend:latest
+    build:
+      context: .
+      args:
+        VITE_API_URL: "${VITE_API_URL:-/api}"
+    ports:
+      - "${FRONTEND_PORT:-8081}:80"
+    environment:
+      API_UPSTREAM: "${API_UPSTREAM:-http://library-backend:8080}"
+    networks:
+      - biblioteca-net
+    restart: unless-stopped
+
+networks:
+  biblioteca-net:
+    external: true
+    name: biblioteca-net
