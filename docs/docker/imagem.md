@@ -109,12 +109,12 @@ O script também grava labels OCI na imagem (versão, data de criação e, quand
 ### Sozinho, junto com o backend em container (mesma rede)
 
 ```bash
-docker network create biblioteca
-docker run -d --name library-backend --network biblioteca library-backend:latest
-docker run --rm --network biblioteca -p 8081:80 biblioteca-web-frontend
+docker network create biblioteca-net
+docker run -d --name library-backend --network biblioteca-net library-backend:latest
+docker run --rm --network biblioteca-net -p 8081:80 biblioteca-web-frontend
 ```
 
-O nome `library-backend` é o padrão de `API_UPSTREAM`, então nenhuma variável é necessária. Abra `http://localhost:8081`. Para limpar: `docker rm -f library-backend` e `docker network rm biblioteca`.
+O nome `library-backend` é o padrão de `API_UPSTREAM`, então nenhuma variável é necessária. Abra `http://localhost:8081`. Para limpar: `docker rm -f library-backend` e `docker network rm biblioteca-net`.
 
 ### Sozinho, com o backend rodando fora do Docker (porta 8080 da máquina)
 
@@ -127,22 +127,22 @@ docker run --rm -p 8081:80 -e API_UPSTREAM=http://172.17.0.1:8080 biblioteca-web
 
 O backend precisa aceitar conexões em todas as interfaces (o padrão do Spring) e a porta 8080 não pode estar bloqueada por firewall. Fora do Linux, use o IP da máquina na rede. A porta 8080 é a do backend, por isso o frontend é publicado na 8081.
 
-### Stack completa com o docker-compose
+### Com o docker-compose
 
-O `docker-compose.yml` fica no repositório do backend ([`../../../library-backend/docker-compose.yml`](../../../library-backend/docker-compose.yml)); os dois repositórios precisam estar lado a lado, porque o compose builda o frontend a partir de `../biblioteca-web-frontend`.
+O `docker-compose.yml` deste repositório sobe só o frontend (o backend tem o próprio compose, no repositório `library-backend`). Os dois containers se enxergam pela rede Docker `biblioteca-net`, declarada como externa nos dois compose e criada uma vez:
 
 ```bash
-cd ../library-backend
-docker compose up -d --build   # builda as duas imagens e sobe a stack
-docker compose up -d           # reaproveita as imagens existentes (ex.: carregadas com scripts/load-images.sh)
+docker network create biblioteca-net
+docker compose up -d --build   # builda a imagem e sobe o frontend
+docker compose up -d           # reaproveita a imagem existente (ex.: carregada com docker load)
 docker compose logs -f         # logs
-docker compose down            # derruba a stack (o H2 é em memória: os dados somem)
+docker compose down            # derruba o frontend
 ```
 
-- Frontend em `http://localhost:8081` e API em `http://localhost:8080`.
-- O serviço do frontend usa `API_UPSTREAM: http://library-backend:8080`, builda com `VITE_API_URL` (padrão `/api`) e só sobe depois que o healthcheck do backend passar (`depends_on` com `service_healthy`).
-- Variáveis opcionais do compose (ambiente ou `.env` ao lado do compose): `BACKEND_PORT` (8080), `FRONTEND_PORT` (8081), `APP_CORS_ALLOWED_ORIGINS`, `JAVA_OPTS`, `BACKEND_TZ` (`America/Sao_Paulo`) e `VITE_API_URL` (`/api`).
-- No repositório do backend, `scripts/build-all-images.sh` gera as imagens dos dois projetos (usando o `scripts/build-image.sh` de cada um) e `scripts/load-images.sh <pasta>` carrega todas em outra máquina, conferindo os checksums.
+- Frontend em `http://localhost:8081`. A API sobe separada, pelo compose do `library-backend` (`http://localhost:8080`).
+- O serviço usa `API_UPSTREAM` (padrão `http://library-backend:8080`, o nome do serviço do backend na rede) e builda com `VITE_API_URL` (padrão `/api`). Não há `depends_on`: o Nginx resolve o backend a cada requisição e sobe sem ele.
+- Variáveis opcionais (ambiente ou `.env` ao lado do compose): `FRONTEND_PORT` (8081), `API_UPSTREAM` e `VITE_API_URL` (`/api`).
+- Para carregar imagens salvas (`.tar.gz`) em outra máquina: `docker load -i <arquivo>.tar.gz`, depois `docker compose up -d`.
 
 ## Como validar
 
@@ -171,5 +171,5 @@ O que foi conferido com a imagem atual:
 | Tela com "Não foi possível carregar os dados" e `/api/...` com 502 | O Nginx não resolve ou não alcança o `API_UPSTREAM` | Suba o backend na mesma rede Docker (nome `library-backend`) ou informe `API_UPSTREAM` com um endereço alcançável (IP literal). |
 | Escritas (POST, PUT, PATCH, DELETE) com 403 CORS, leituras funcionando | Imagem antiga, sem `proxy_set_header Origin "";`, ou acesso direto à porta do backend por uma origem não liberada | Gere a imagem de novo e acesse sempre pelo frontend (`/api`). |
 | `bad interpreter` ao rodar `scripts/build-image.sh` | Finais de linha CRLF no script | Converta para LF (o `.gitattributes` já força `*.sh` em LF no checkout). |
-| `docker compose up` falha ao buildar o frontend | Repositórios não estão lado a lado | Mantenha `library-backend` e `biblioteca-web-frontend` na mesma pasta pai. |
+| `docker compose up` falha com "network biblioteca-net declared as external, but could not be found" | A rede compartilhada com o backend ainda não foi criada | `docker network create biblioteca-net` (uma vez). |
 | Container `unhealthy` | O Nginx não subiu (configuração inválida) | `docker logs <container>` e `docker exec <container> nginx -t`. |

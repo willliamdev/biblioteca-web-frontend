@@ -116,7 +116,7 @@ docker build -t biblioteca-web-frontend .
 docker run --rm -p 8081:80 -e API_UPSTREAM=http://<backend-host>:8080 biblioteca-web-frontend
 ```
 
-The full stack (backend and frontend) is started with `docker compose up -d --build` from the `library-backend` repository, with both repositories side by side.
+This repository has its own `docker-compose.yml`, which starts only the frontend. The backend has its own compose in the `library-backend` repository; the two containers stay separate and reach each other through the external Docker network `biblioteca-net` (`docker network create biblioteca-net`, once). Do not make one repository build the other.
 
 ## Documentation
 

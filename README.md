@@ -30,7 +30,7 @@ A documentação detalhada está indexada em [`docs/INDEX.md`](docs/INDEX.md).
 - npm
 - Git
 - Backend `library-backend` (repositório irmão, em `../library-backend`) para ter dados reais: Java 21 e Maven. Veja [Rodando junto com o backend](#rodando-junto-com-o-backend).
-- Docker, caso queira validar a imagem de produção ou subir a stack completa
+- Docker, caso queira validar a imagem de produção ou subir o container do frontend
 
 ### Instalação local
 
@@ -151,16 +151,17 @@ scripts/build-image.sh            # tag automática (git describe) e latest
 scripts/build-image.sh 1.0.0      # tag explícita
 ```
 
-### Stack completa (backend + frontend)
+### Com o docker-compose
 
-O `docker-compose.yml` fica no repositório do backend ([`../library-backend/docker-compose.yml`](../library-backend/docker-compose.yml)) e builda as duas imagens a partir das pastas irmãs:
+O `docker-compose.yml` deste repositório sobe **só o frontend**. O backend tem o próprio `docker-compose.yml`, no repositório `library-backend`. Os dois containers ficam separados e se enxergam pela rede Docker `biblioteca-net`, que precisa existir (crie uma vez):
 
 ```bash
-cd ../library-backend
-docker compose up -d --build
+docker network create biblioteca-net
+docker compose up -d --build                              # aqui: sobe o frontend em http://localhost:8081
+(cd ../library-backend && docker compose up -d --build)   # no repositório do backend: sobe a API em http://localhost:8080
 ```
 
-Abra `http://localhost:8081` (frontend). A API fica em `http://localhost:8080`. Para derrubar: `docker compose down`.
+O frontend sobe mesmo sem o backend; as chamadas `/api` respondem 502 até a API ficar de pé. Para derrubar, rode `docker compose down` em cada repositório.
 
 ### Iniciar só o container do frontend
 

@@ -32,7 +32,7 @@ O frontend rodava com dados fixos de `src/services/mockData.ts`, sem persistênc
 - `nginx/default.conf.template`: serve o SPA (fallback para `index.html`, cache longo em `/assets/`), faz proxy de `/api/` para `API_UPSTREAM` removendo o prefixo e o header `Origin`. Variáveis `API_UPSTREAM` e `NGINX_RESOLVER`.
 - `scripts/build-image.sh`: gera a imagem e salva `images/<nome>_<tag>.tar.gz` com `.sha256`.
 - `.dockerignore`, `.gitignore` (`images/`) e `.gitattributes` (`*.sh text eol=lf`) ajustados.
-- A stack completa (backend + frontend) sobe pelo `docker-compose.yml` do repositório `library-backend`.
+- `docker-compose.yml` só do frontend; o backend tem o próprio compose, em outro repositório. Os dois containers ficam separados e se encontram pela rede externa `biblioteca-net`.
 - Detalhes: [`../../docker/imagem.md`](../../docker/imagem.md).
 
 ### Documentação

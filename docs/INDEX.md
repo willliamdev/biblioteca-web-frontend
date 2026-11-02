@@ -22,7 +22,7 @@ Repositório irmão: `library-backend` (API Spring Boot em `../library-backend`)
 
 | Documento | Descrição |
 | --- | --- |
-| [docker/imagem.md](docker/imagem.md) | Imagem de produção (Node e Nginx): Dockerfile, template do Nginx, variáveis `VITE_API_URL`, `API_UPSTREAM` e `NGINX_RESOLVER`, `scripts/build-image.sh`, execução sozinha e na stack do compose, validação e problemas comuns. |
+| [docker/imagem.md](docker/imagem.md) | Imagem de produção (Node e Nginx): Dockerfile, template do Nginx, variáveis `VITE_API_URL`, `API_UPSTREAM` e `NGINX_RESOLVER`, `scripts/build-image.sh`, execução sozinha e com o docker-compose do frontend (rede `biblioteca-net`), validação e problemas comuns. |
 
 ## Modelo de dados
 
@@ -41,6 +41,7 @@ Repositório irmão: `library-backend` (API Spring Boot em `../library-backend`)
 | Arquivo | Para que serve |
 | --- | --- |
 | [../Dockerfile](../Dockerfile) | Build da imagem do frontend (Node e Nginx). |
+| [../docker-compose.yml](../docker-compose.yml) | Sobe só o frontend, na rede `biblioteca-net` compartilhada com o backend. |
 | [../nginx/default.conf.template](../nginx/default.conf.template) | Template do Nginx: SPA, proxy `/api/` e cache. |
 | [../scripts/build-image.sh](../scripts/build-image.sh) | Gera a imagem e o `.tar.gz` com checksum. |
 | [../.env.example](../.env.example) | Variáveis de ambiente (`VITE_API_URL`, `VITE_PROXY_TARGET`). |
