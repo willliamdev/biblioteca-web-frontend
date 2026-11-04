@@ -1,25 +1,45 @@
 import { Button, Group, Select, Stack, TextInput } from '@mantine/core';
 import type { UseFormReturnType } from '@mantine/form';
 import { useEffect, useMemo } from 'react';
-import type { Book } from '../types/book';
+import type { Author, Book, Genre } from '../types/book';
 import { GenericModal } from './GenericModal';
 import { useBookForm, type BookFormData } from './useBookForm';
 
 interface BookFormModalProps {
   opened: boolean;
   onClose: () => void;
-  onCreateBook: (values: BookFormData) => void;
-  onUpdateBook: (bookId: number, values: BookFormData) => void;
+  onSaved: () => void;
+  // Chamado quando a API indica que livros/autores/gêneros exibidos estão desatualizados (404/409)
+  onOutdatedData?: () => void;
   bookToEdit: Book | null;
+  authors: Author[];
+  genres: Genre[];
 }
 
 interface BookFormContentProps {
   form: UseFormReturnType<BookFormData>;
-  onSubmit: (values: BookFormData) => void;
+  authors: Author[];
+  genres: Genre[];
+  onSubmit: (values: BookFormData) => Promise<void>;
   onCancel?: () => void;
 }
 
-export function BookFormContent({ form, onSubmit, onCancel }: BookFormContentProps) {
+export function BookFormContent({
+  form,
+  authors,
+  genres,
+  onSubmit,
+  onCancel,
+}: BookFormContentProps) {
+  const authorOptions = useMemo(
+    () => authors.map((author) => ({ value: String(author.id), label: author.name })),
+    [authors]
+  );
+  const genreOptions = useMemo(
+    () => genres.map((genre) => ({ value: String(genre.id), label: genre.name })),
+    [genres]
+  );
+
   return (
     <form onSubmit={form.onSubmit(onSubmit)}>
       <Stack gap="md">
@@ -30,29 +50,24 @@ export function BookFormContent({ form, onSubmit, onCancel }: BookFormContentPro
           {...form.getInputProps('title')}
         />
 
-        <TextInput
+        <Select
           label="Autor"
-          placeholder="Ex: Machado de Assis"
+          placeholder="Selecione o autor"
+          data={authorOptions}
+          searchable
+          nothingFoundMessage="Nenhum autor encontrado"
           withAsterisk
-          {...form.getInputProps('author')}
+          {...form.getInputProps('authorId')}
         />
 
         <Select
-          label="Categoria"
-          placeholder="Selecione uma categoria"
-          data={[
-            'Romance',
-            'Ficção Científica',
-            'História',
-            'Tecnologia',
-            'Literatura Brasileira',
-            'Fantasia',
-            'Distopia',
-            'Mistério e Suspense',
-            'Realismo Mágico',
-          ]}
+          label="Gênero"
+          placeholder="Selecione o gênero"
+          data={genreOptions}
+          searchable
+          nothingFoundMessage="Nenhum gênero encontrado"
           withAsterisk
-          {...form.getInputProps('category')}
+          {...form.getInputProps('genreId')}
         />
 
         <TextInput
@@ -75,7 +90,7 @@ export function BookFormContent({ form, onSubmit, onCancel }: BookFormContentPro
               Cancelar
             </Button>
           ) : null}
-          <Button type="submit" color="blue">
+          <Button type="submit" color="blue" loading={form.submitting}>
             Salvar
           </Button>
         </Group>
@@ -87,9 +102,11 @@ export function BookFormContent({ form, onSubmit, onCancel }: BookFormContentPro
 export function BookFormModal({
   opened,
   onClose,
-  onCreateBook,
-  onUpdateBook,
+  onSaved,
+  onOutdatedData,
   bookToEdit,
+  authors,
+  genres,
 }: BookFormModalProps) {
   const { form, resetForm, submitForm } = useBookForm();
   const bookFormValues = useMemo(
@@ -97,8 +114,8 @@ export function BookFormModal({
       bookToEdit
         ? {
             title: bookToEdit.title,
-            author: bookToEdit.author.name,
-            category: bookToEdit.genre.name,
+            authorId: String(bookToEdit.author.id),
+            genreId: String(bookToEdit.genre.id),
             publicationDate: bookToEdit.publicationDate,
             publisher: bookToEdit.publisher,
           }
@@ -125,16 +142,16 @@ export function BookFormModal({
     onClose();
   };
 
-  const handleSubmit = (values: BookFormData) => {
-    submitForm(values, Boolean(bookToEdit), () => {
-      if (bookToEdit) {
-        onUpdateBook(bookToEdit.id, values);
-      } else {
-        onCreateBook(values);
-      }
-      handleClose();
-    });
-  };
+  const handleSubmit = (values: BookFormData) =>
+    submitForm(
+      values,
+      bookToEdit,
+      () => {
+        onSaved();
+        handleClose();
+      },
+      onOutdatedData
+    );
 
   return (
     <GenericModal
@@ -142,7 +159,13 @@ export function BookFormModal({
       onClose={handleClose}
       title={bookToEdit ? 'Editar Livro' : 'Cadastrar Novo Livro'}
     >
-      <BookFormContent form={form} onSubmit={handleSubmit} onCancel={handleClose} />
+      <BookFormContent
+        form={form}
+        authors={authors}
+        genres={genres}
+        onSubmit={handleSubmit}
+        onCancel={handleClose}
+      />
     </GenericModal>
   );
 }

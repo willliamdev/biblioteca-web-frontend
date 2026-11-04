@@ -8,7 +8,11 @@ interface StatsContainerProps {
 
 export function StatsContainer({ data }: StatsContainerProps) {
   return (
-    <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing={{ base: 'sm', md: 'lg' }} w="100%">
+    <SimpleGrid
+      cols={{ base: 1, sm: 2, lg: data.length > 3 ? 4 : 3 }}
+      spacing={{ base: 'sm', md: 'lg' }}
+      w="100%"
+    >
       {data.map((item) => (
         <StatsCard
           key={item.title}

@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Imagens Docker geradas por scripts/build-image.sh
+images/

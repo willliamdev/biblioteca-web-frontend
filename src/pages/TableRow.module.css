@@ -1,0 +1,15 @@
+.row .rowActions {
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.row:hover .rowActions,
+.row:focus-within .rowActions {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .row .rowActions {
+    opacity: 1;
+  }
+}

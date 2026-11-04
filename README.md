@@ -1,12 +1,19 @@
 # Biblioteca Web Frontend
 
-Frontend da aplicação de biblioteca, construído com React (+ Vite), TypeScript e Mantine.
+Frontend do sistema de empréstimo de livros, construído com React (+ Vite), TypeScript e Mantine.
+Os dados vêm da API REST do backend `library-backend` (Spring Boot), que fica em um repositório irmão.
 Este é o ponto de partida para quem vai criar componentes, corrigir telas ou revisar código.
+
+A documentação detalhada está indexada em [`docs/INDEX.md`](docs/INDEX.md).
+
+Quer só subir o site, sem instalar Node, Java nem Maven? Veja [Rodando com Docker](#rodando-com-docker).
 
 ## Sumário
 
 - [Começando](#começando)
+- [Rodando junto com o backend](#rodando-junto-com-o-backend)
 - [Comandos disponíveis](#comandos-disponíveis)
+- [Telas](#telas)
 - [Rodando com Docker](#rodando-com-docker)
 - [Estrutura do projeto](#estrutura-do-projeto)
 - [Usando o Mantine](#usando-o-mantine)
@@ -21,10 +28,11 @@ Este é o ponto de partida para quem vai criar componentes, corrigir telas ou re
 
 ### Pré-requisitos
 
-- Node.js 20 ou superior
+- Node.js 20.19 ou superior (recomendado o 22, o mesmo da imagem Docker, que usa `node:22-alpine`). O Vite 8 exige 20.19+ ou 22.12+, e o ESLint 10 exige 20.19+, 22.13+ ou 24+; por isso, no Node 22, use a partir da 22.13.
 - npm
 - Git
-- Docker, caso queira validar a imagem de produção
+- Backend `library-backend` (repositório irmão, em `../library-backend`) para ter dados reais: Java 21 e Maven. Veja [Rodando junto com o backend](#rodando-junto-com-o-backend).
+- Docker, caso queira validar a imagem de produção ou subir o container do frontend
 
 ### Instalação local
 
@@ -51,6 +59,50 @@ Abra o endereço mostrado no terminal, normalmente `http://localhost:5173`.
 
 O Vite atualiza a página automaticamente enquanto você edita os arquivos.
 
+Sem o backend no ar, a aplicação abre, mas mostra o alerta "Não foi possível carregar os dados" com o botão "Tentar novamente".
+
+### Configuração do ambiente
+
+As variáveis ficam em `.env.example`. Para mudar algo, copie o arquivo para `.env.local` (ignorado pelo Git) e reinicie o `npm run dev`:
+
+```bash
+cp .env.example .env.local
+```
+
+| Variável | Padrão | Para que serve |
+| --- | --- | --- |
+| `VITE_API_URL` | `/api` | URL base da API usada pelo navegador. É embutida no bundle em tempo de build. Com `/api`, as chamadas passam pelo proxy (Vite em desenvolvimento, Nginx na imagem Docker), que remove o prefixo `/api` antes de repassar ao backend. |
+| `VITE_PROXY_TARGET` | `http://localhost:8080` | Destino do proxy do Vite em `npm run dev` e `npm run preview`. Só é lida pelo `vite.config.ts`; não vai para o bundle. |
+
+Mantenha `VITE_API_URL=/api`. Com uma URL absoluta (ex.: `http://localhost:8080`) o navegador chama o backend direto, sem o proxy, e o backend só aceita as origens liberadas no CORS (por padrão `http://localhost:5173` e `http://localhost:4173`).
+
+## Rodando junto com o backend
+
+O backend é o repositório irmão `library-backend` (Spring Boot, Java 21, banco H2 em memória). Os dois repositórios devem ficar lado a lado:
+
+```text
+faculdade/
+├── biblioteca-web-frontend/
+└── library-backend/
+```
+
+Em dois terminais:
+
+```bash
+# Terminal 1: backend na porta 8080
+cd ../library-backend
+mvn spring-boot:run
+
+# Terminal 2: frontend na porta 5173
+cd ../biblioteca-web-frontend
+npm run dev
+```
+
+- O backend sobe com dados de exemplo (12 autores, 9 gêneros, 20 livros, 10 usuários e 14 empréstimos). Como o H2 é em memória, tudo volta ao estado inicial a cada reinício do backend.
+- O navegador chama `/api/...` no próprio servidor do Vite, que repassa para `VITE_PROXY_TARGET` sem o prefixo `/api` (`/api/authors` vira `http://localhost:8080/authors`). Se o backend estiver em outro endereço: `VITE_PROXY_TARGET=http://192.168.0.10:8080 npm run dev`.
+- O proxy também remove o header `Origin` das requisições. Sem isso, escritas (POST, PUT, PATCH e DELETE) feitas por uma origem não liberada no CORS (ex.: `http://127.0.0.1:5173`) seriam recusadas pelo backend com 403.
+- Detalhes de como o frontend consome a API (erros, recarga de dados, tabela de endpoints): [`docs/integracao/api.md`](docs/integracao/api.md).
+
 ## Comandos disponíveis
 
 | Comando | Para que serve |
@@ -63,9 +115,65 @@ O Vite atualiza a página automaticamente enquanto você edita os arquivos.
 
 Ainda não existe um framework de testes automatizados configurado. Por enquanto, valide o comportamento no navegador e execute `npm run lint` e `npm run build` antes de enviar alterações.
 
+## Telas
+
+A navegação fica no menu lateral (no celular, abre pelo botão de menu). Todas as telas leem os dados da API e recarregam apenas o que mudou depois de cada cadastro, edição ou exclusão.
+
+| Tela | O que mostra e faz |
+| --- | --- |
+| Dashboard | Cartões com total de livros, empréstimos ativos, empréstimos em atraso e total de autores, mais atalhos para cadastrar livro, cadastrar autor e registrar empréstimo. |
+| Livros | Tabela com título, gênero, autor, lançamento, editora e situação (Disponível ou Emprestado). Cadastro e edição escolhem autor e gênero em listas pesquisáveis. A exclusão pede confirmação e avisa quando o livro é o último do autor. |
+| Autores | Tabela com nome e quantidade de livros, com cadastro, edição e exclusão. Autor sem livros aparece com a etiqueta "Sem livros": pela regra do acervo, todo autor deve ter ao menos um livro, mas o cadastro não é bloqueado. |
+| Usuários | Tabela com nome, CPF formatado e situação (Sem pendências ou Com pendências), com cadastro, edição e exclusão. O CPF pode ser digitado com ou sem pontuação; o backend valida os dígitos e recusa CPF repetido. |
+| Empréstimos | Tabela com livro, usuário, início, devolução prevista, "Devolvido em" e status (Ativo, Atrasado ou Concluído), com filtro por status. "Novo Empréstimo" lista só livros disponíveis e desabilita usuários com pendências. "Registrar devolução" abre um modal para informar a data efetiva (padrão: hoje; aceita data retroativa, entre o início do empréstimo e hoje). |
+
+O status do empréstimo, a pendência do usuário (`debtFree`) e a disponibilidade do livro (`available`) são calculados pelo backend; o frontend só exibe.
+
+Limitações conhecidas:
+
+- Não existe tela de Gêneros. Os gêneros vêm da API e alimentam o seletor de livros; o `genreService` já tem o CRUD completo, mas nenhuma tela o usa. Sem a tela, o catálogo fica limitado aos gêneros do seed.
+- Não existe exclusão de empréstimo (o backend também não oferece); um empréstimo termina com a devolução.
+
 ## Rodando com Docker
 
-O `Dockerfile` usa dois estágios: primeiro instala as dependências e gera o build; depois copia o resultado para um servidor Nginx.
+Com o Docker não é preciso instalar Node, Java nem Maven. O `Dockerfile` usa dois estágios: primeiro instala as dependências e gera o build (`node:22-alpine`); depois copia o resultado para um Nginx (`nginx:1.30-alpine`) que serve o SPA e faz proxy de `/api/` para o backend, removendo o prefixo `/api` e o header `Origin`.
+
+O frontend e o backend são projetos separados: cada um tem o próprio `Dockerfile` e o próprio `docker-compose.yml`. Os dois containers se encontram pela rede Docker `biblioteca-net`.
+
+### Subir o frontend (docker compose up)
+
+```bash
+docker network create biblioteca-net   # uma vez por máquina; se ela já existir, o erro pode ser ignorado
+docker compose up -d --build           # builda a imagem e sobe o site
+```
+
+Abra `http://localhost:8081`. O site sobe mesmo sem o backend; até a API ficar de pé, as chamadas `/api` respondem 502 e a tela mostra "Não foi possível carregar os dados".
+
+Comandos úteis, rodados na pasta deste repositório:
+
+| Comando | Para que serve |
+| --- | --- |
+| `docker compose up -d` | Sobe usando a imagem que já existe (só builda se ela faltar). |
+| `docker compose up -d --build` | Rebuilda a imagem e sobe. Use depois de mudar o código. |
+| `docker compose ps` | Mostra o estado e o health do container. |
+| `docker compose logs -f` | Acompanha os logs. |
+| `docker compose down` | Derruba o site. |
+
+Para publicar em outra porta: `FRONTEND_PORT=9081 docker compose up -d`. Outras variáveis (ambiente ou `.env` ao lado do compose): `API_UPSTREAM` (destino do proxy `/api`, padrão `http://library-backend:8080`) e `VITE_API_URL` (padrão `/api`, só vale no build).
+
+### Subir o sistema completo (API + site)
+
+Os dois repositórios lado a lado, cada um com o próprio compose:
+
+```bash
+docker network create biblioteca-net                      # uma vez por máquina
+(cd ../library-backend && docker compose up -d --build)   # API em http://localhost:8080
+docker compose up -d --build                              # site em http://localhost:8081
+```
+
+A ordem não importa. Os dados da API ficam em memória: voltam ao padrão a cada subida. Para derrubar, rode `docker compose down` nos dois repositórios.
+
+Detalhes (template do Nginx, variáveis, cache de build, tamanho e checksum da imagem): [`docs/docker/imagem.md`](docs/docker/imagem.md).
 
 ### Construir a imagem
 
@@ -73,24 +181,44 @@ O `Dockerfile` usa dois estágios: primeiro instala as dependências e gera o bu
 docker build -t biblioteca-web-frontend .
 ```
 
-### Iniciar o container
+Para gerar também o arquivo `.tar.gz` com o `.sha256` (pasta `images/`, ignorada pelo Git), use o script:
 
 ```bash
-docker run --rm -p 8080:80 biblioteca-web-frontend
+scripts/build-image.sh            # tag automática (git describe) e latest
+scripts/build-image.sh 1.0.0      # tag explícita
 ```
 
-Abra `http://localhost:8080` no navegador. Para parar, pressione `Ctrl+C` no terminal.
+### Levar a imagem para outra máquina
+
+Na máquina de origem, gere o arquivo com `scripts/build-image.sh` (acima). Copie para a máquina de destino o `.tar.gz`, o `.sha256` e o `docker-compose.yml`. No destino só é preciso ter o Docker:
+
+```bash
+sha256sum -c biblioteca-web-frontend_<tag>.tar.gz.sha256   # confere se o arquivo chegou inteiro
+docker load -i biblioteca-web-frontend_<tag>.tar.gz        # carrega a imagem
+docker network create biblioteca-net
+docker compose up -d                                       # usa a imagem carregada, sem rebuildar
+```
+
+### Iniciar só o container do frontend
+
+O Nginx precisa alcançar o backend. Por padrão ele procura `http://library-backend:8080`, nome que só resolve em uma rede Docker onde exista um container (ou alias) `library-backend`. Com o backend rodando na máquina (porta 8080), aponte o proxy para o IP do host; no Linux, o IP da bridge do Docker costuma ser `172.17.0.1`:
+
+```bash
+docker run --rm -p 8081:80 -e API_UPSTREAM=http://172.17.0.1:8080 biblioteca-web-frontend
+```
+
+Abra `http://localhost:8081` no navegador. Para parar, pressione `Ctrl+C` no terminal. Sem backend alcançável, a página abre, mas mostra "Não foi possível carregar os dados" (o proxy responde 502).
 
 ### Validar a versão do container
 
 Depois de iniciar o container, confira:
 
-1. A página abre em `http://localhost:8080`.
+1. A página abre em `http://localhost:8081` e os dados carregam (sem o alerta de erro).
 2. Não há erros no console do navegador.
-3. Os botões, formulários e navegação da alteração funcionam.
+3. Os botões, formulários e navegação da alteração funcionam, inclusive uma escrita (ex.: cadastrar um autor).
 4. O layout funciona em uma janela estreita e em uma janela larga.
 
-O build usado pelo Docker também pode ser validado sem container com:
+O build usado pelo Docker também pode ser validado sem container com (o `preview` usa a porta 4173 e o mesmo proxy `/api` do desenvolvimento):
 
 ```bash
 npm run build
@@ -101,18 +229,50 @@ npm run preview
 
 ```text
 src/
-├── App.tsx              # Componente principal da aplicação
-├── main.tsx             # Entrada do React e configuração do Mantine
-├── assets/              # Imagens e outros recursos importados pelo código
-├── services/            # Acesso a API, mocks e regras de comunicação
-├── types/               # Tipos e DTOs compartilhados
-└── mockData.ts          # Dados temporários para desenvolvimento
+├── App.tsx                  # Casca da aplicação (AppShell), navegação entre telas, modais e exclusões
+├── main.tsx                 # Entrada do React, MantineProvider, Notifications e locale do Day.js
+├── vite-env.d.ts            # Tipos das variáveis de ambiente (VITE_API_URL)
+├── pages/                   # Uma página por tela
+│   ├── DashboardPage.tsx
+│   ├── BooksPage.tsx        # + BooksPage.module.css (ações da linha visíveis ao passar o mouse)
+│   ├── AuthorsPage.tsx
+│   ├── UsersPage.tsx
+│   ├── LoansPage.tsx
+│   └── TableRow.module.css  # Mesmo efeito de hover para Autores e Usuários
+├── components/              # Modais de formulário e seus hooks, cartões do dashboard
+│   ├── GenericModal.tsx
+│   ├── BookFormModal.tsx    # + useBookForm.ts
+│   ├── AuthorFormModal.tsx  # + useAuthorForm.ts
+│   ├── UserFormModal.tsx    # + useUserForm.ts
+│   ├── LoanFormModal.tsx    # + useLoanForm.ts
+│   ├── ReturnLoanModal.tsx  # + useReturnLoanForm.ts
+│   ├── StatsCard.tsx
+│   └── StatusContainer.tsx
+├── hooks/
+│   └── useLibraryData.ts    # Carrega os dados da API e recarrega só o necessário (refresh)
+├── services/                # Única camada que fala com a API
+│   ├── api.ts               # Cliente HTTP (fetch), ApiError, getErrorMessage, isOutdatedDataError
+│   ├── authorService.ts
+│   ├── bookService.ts       # Mapeia publishDate (API) <-> publicationDate (front)
+│   ├── genreService.ts
+│   ├── loanService.ts       # Mapeia o recurso /lendings da API para o tipo Loan
+│   ├── userService.ts
+│   └── mockData.ts          # Mocks antigos, mantidos só como referência (não é importado)
+├── types/                   # Tipos e DTOs compartilhados (book.ts, loan.ts, user.ts)
+└── utils/
+    ├── feedback.ts          # Notificações e erros de campo vindos da API nos formulários
+    └── format.ts            # Datas (ISO <-> DD/MM/YYYY) e CPF
 
-docs/                    # Documentação e imagens do projeto
-public/                  # Arquivos públicos servidos sem processamento
+nginx/                       # Template do Nginx da imagem Docker (serve o SPA e faz proxy de /api)
+scripts/                     # build-image.sh: gera a imagem Docker e o .tar.gz com checksum
+docs/                        # Documentação e imagens do projeto (comece por docs/INDEX.md)
+public/                      # Arquivos públicos servidos sem processamento
+Dockerfile                   # Build em dois estágios: Vite (Node) e Nginx
+.env.example                 # Variáveis de ambiente (VITE_API_URL, VITE_PROXY_TARGET)
+vite.config.ts               # Plugin do React e proxy /api (dev e preview)
 ```
 
-Ao criar novos arquivos, mantenha cada responsabilidade no lugar mais próximo dela. Tipos que são usados por várias telas devem ficar em `src/types`; chamadas para API devem ficar em `src/services`; componentes reutilizáveis podem ser organizados em uma pasta própria quando essa necessidade aparecer.
+Ao criar novos arquivos, mantenha cada responsabilidade no lugar mais próximo dela. Tipos que são usados por várias telas devem ficar em `src/types`; chamadas para API devem ficar em `src/services` (componentes e páginas nunca chamam `fetch` direto); componentes reutilizáveis podem ser organizados em uma pasta própria quando essa necessidade aparecer. A pasta `src/assets/` ainda não existe: crie-a quando houver imagens ou outros recursos importados pelo código.
 
 ## Usando o Mantine
 
@@ -160,6 +320,8 @@ Muitas propriedades aceitam valores responsivos. Quando necessário, use `Grid` 
 
 O projeto já possui `@mantine/dates`, `dayjs` e a localidade `pt-br` configurados. Para campos de data, importe os estilos de datas já carregados em `main.tsx` e siga os exemplos da documentação do Mantine.
 
+Hoje os formulários usam `TextInput type="date"`, cujo valor já é uma string ISO `YYYY-MM-DD`, o mesmo formato da API. Datas trafegam sempre em ISO e só são formatadas para exibição (`DD/MM/YYYY`) com o Day.js, pelo `formatDate` de `src/utils/format.ts`.
+
 ## Estilização e customização
 
 Para uma alteração simples, priorize as props de estilo do componente:
@@ -200,8 +362,11 @@ Esse é o local recomendado para regras gerais que qualquer agente deve seguir, 
 - Usar nomes de variáveis em inglês.
 - Respeitar o Prettier e a estrutura das pastas.
 - Usar Mantine antes de criar componentes ou estilos do zero.
+- Buscar dados sempre pela camada `src/services`, nunca com `fetch` direto em componentes.
 - Executar `npm run format`, `npm run lint` e `npm run build` antes de concluir.
 - Não inventar APIs, dependências ou arquivos que não sejam necessários.
+
+O `CLAUDE.md` da raiz contém apenas `@AGENTS.md`: é o jeito de o Claude Code carregar essas mesmas regras, sem duplicar texto.
 
 Para instruções específicas do GitHub Copilot, também pode ser usado:
 
@@ -226,6 +391,8 @@ Os arquivos de instrução devem ser versionados junto com o projeto. Não coloq
 - Textos visíveis para o usuário podem ficar em português.
 - Siga a formatação do Prettier. Rode `npm run format` antes de enviar.
 - Use TypeScript e evite `any` quando um tipo puder ser definido.
+- Os dados vêm da API: chamadas HTTP ficam em `src/services`, e o mapeamento entre o formato do backend e o do frontend também (ex.: `publishDate` <-> `publicationDate`). Não chame `fetch` direto em componentes e não importe `src/services/mockData.ts`.
+- Avisos de sucesso e erro usam `notifySuccess` e `notifyError` de `src/utils/feedback.ts`; erros de validação da API nos formulários usam `handleFormError`.
 - Prefira componentes pequenos e reutilizáveis.
 - Não envie código quebrado, imports não utilizados ou `console.log` de teste.
 - Não altere configurações globais sem explicar a necessidade na descrição da alteração.
@@ -299,11 +466,11 @@ Se você não souber Git, pode seguir exatamente os comandos acima. Em caso de c
 - [ ] Rodei `npm run format`.
 - [ ] Rodei `npm run lint` sem erros.
 - [ ] Rodei `npm run build` sem erros.
-- [ ] Testei a tela no navegador.
-- [ ] Testei estados importantes: carregamento, vazio, erro e sucesso, quando aplicável.
+- [ ] Testei a tela no navegador, contra o backend real (`library-backend`).
+- [ ] Testei estados importantes: carregamento, vazio, erro (inclusive com a API parada) e sucesso, quando aplicável.
 - [ ] Conferi a versão mobile e desktop.
 - [ ] Revisei `git diff` e não incluí arquivos que não fazem parte da tarefa.
-- [ ] Atualizei a documentação ou os mocks se a alteração exigir isso.
+- [ ] Atualizei a documentação (`README.md`, `AGENTS.md`, `docs/` e o `docs/INDEX.md`) se a alteração exigir isso.
 
 ## Modelo de dados
 
@@ -311,4 +478,20 @@ O Diagrama de Entidade-Relacionamento (DER) está em `docs/der.png`:
 
 ![Diagrama de Entidade-Relacionamento](docs/der.png)
 
-Os tipos atuais ficam em `src/types` e usam interfaces como `Book`, `User`, `Loan` e seus DTOs de criação. Quando um tipo for compartilhado entre telas ou serviços, adicione-o nessa pasta em vez de duplicar a definição.
+Os tipos atuais ficam em `src/types` e são a fonte de verdade para o código do frontend. Quando um tipo for compartilhado entre telas ou serviços, adicione-o nessa pasta em vez de duplicar a definição.
+
+| Arquivo | Tipos |
+| --- | --- |
+| `src/types/book.ts` | `Author`, `AuthorWithBookCount` (com `bookCount`), `Genre`, `GenreWithBookCount`, `Book`, `CreateBookDTO`, `CreateAuthorDTO`, `CreateGenreDTO` |
+| `src/types/user.ts` | `User` (com `debtFree`), `CreateUserDTO` |
+| `src/types/loan.ts` | `Loan`, `LoanStatus` (`'ATIVO' \| 'CONCLUIDO' \| 'ATRASADO'`), `CreateLoanDTO`, `ReturnLoanDTO` |
+
+O DER descreve as entidades do domínio (Usuário, Empréstimo, Livro, Gênero e Autor). A aplicação acrescenta campos calculados pelo backend, que o frontend apenas exibe:
+
+- `Loan.returnDate`: data efetiva da devolução (`null` enquanto o livro não foi devolvido).
+- `Loan.status`: `ATIVO`, `ATRASADO` (prazo vencido e sem devolução) ou `CONCLUIDO` (devolvido).
+- `Book.available`: `true` quando o livro não tem empréstimo em aberto.
+- `User.debtFree`: `false` quando o usuário tem empréstimo em atraso; esse usuário não pode fazer novos empréstimos.
+- `bookCount` em autores e gêneros: quantidade de livros vinculados.
+
+Diferenças de nome entre a API e o frontend (resolvidas nos services): o livro usa `publishDate` na API e `publicationDate` no frontend, e empréstimos são o recurso `/lendings` da API (tipo `Loan` no frontend). A tabela completa está em [`docs/integracao/api.md`](docs/integracao/api.md).
