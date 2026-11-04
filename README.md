@@ -6,6 +6,8 @@ Este é o ponto de partida para quem vai criar componentes, corrigir telas ou re
 
 A documentação detalhada está indexada em [`docs/INDEX.md`](docs/INDEX.md).
 
+Quer só subir o site, sem instalar Node, Java nem Maven? Veja [Rodando com Docker](#rodando-com-docker).
+
 ## Sumário
 
 - [Começando](#começando)
@@ -134,7 +136,42 @@ Limitações conhecidas:
 
 ## Rodando com Docker
 
-O `Dockerfile` usa dois estágios: primeiro instala as dependências e gera o build (`node:22-alpine`); depois copia o resultado para um Nginx (`nginx:1.30-alpine`) que serve o SPA e faz proxy de `/api/` para o backend, removendo o prefixo `/api` e o header `Origin`.
+Com o Docker não é preciso instalar Node, Java nem Maven. O `Dockerfile` usa dois estágios: primeiro instala as dependências e gera o build (`node:22-alpine`); depois copia o resultado para um Nginx (`nginx:1.30-alpine`) que serve o SPA e faz proxy de `/api/` para o backend, removendo o prefixo `/api` e o header `Origin`.
+
+O frontend e o backend são projetos separados: cada um tem o próprio `Dockerfile` e o próprio `docker-compose.yml`. Os dois containers se encontram pela rede Docker `biblioteca-net`.
+
+### Subir o frontend (docker compose up)
+
+```bash
+docker network create biblioteca-net   # uma vez por máquina; se ela já existir, o erro pode ser ignorado
+docker compose up -d --build           # builda a imagem e sobe o site
+```
+
+Abra `http://localhost:8081`. O site sobe mesmo sem o backend; até a API ficar de pé, as chamadas `/api` respondem 502 e a tela mostra "Não foi possível carregar os dados".
+
+Comandos úteis, rodados na pasta deste repositório:
+
+| Comando | Para que serve |
+| --- | --- |
+| `docker compose up -d` | Sobe usando a imagem que já existe (só builda se ela faltar). |
+| `docker compose up -d --build` | Rebuilda a imagem e sobe. Use depois de mudar o código. |
+| `docker compose ps` | Mostra o estado e o health do container. |
+| `docker compose logs -f` | Acompanha os logs. |
+| `docker compose down` | Derruba o site. |
+
+Para publicar em outra porta: `FRONTEND_PORT=9081 docker compose up -d`. Outras variáveis (ambiente ou `.env` ao lado do compose): `API_UPSTREAM` (destino do proxy `/api`, padrão `http://library-backend:8080`) e `VITE_API_URL` (padrão `/api`, só vale no build).
+
+### Subir o sistema completo (API + site)
+
+Os dois repositórios lado a lado, cada um com o próprio compose:
+
+```bash
+docker network create biblioteca-net                      # uma vez por máquina
+(cd ../library-backend && docker compose up -d --build)   # API em http://localhost:8080
+docker compose up -d --build                              # site em http://localhost:8081
+```
+
+A ordem não importa. Os dados da API ficam em memória: voltam ao padrão a cada subida. Para derrubar, rode `docker compose down` nos dois repositórios.
 
 Detalhes (template do Nginx, variáveis, cache de build, tamanho e checksum da imagem): [`docs/docker/imagem.md`](docs/docker/imagem.md).
 
@@ -151,17 +188,16 @@ scripts/build-image.sh            # tag automática (git describe) e latest
 scripts/build-image.sh 1.0.0      # tag explícita
 ```
 
-### Com o docker-compose
+### Levar a imagem para outra máquina
 
-O `docker-compose.yml` deste repositório sobe **só o frontend**. O backend tem o próprio `docker-compose.yml`, no repositório `library-backend`. Os dois containers ficam separados e se enxergam pela rede Docker `biblioteca-net`, que precisa existir (crie uma vez):
+Na máquina de origem, gere o arquivo com `scripts/build-image.sh` (acima). Copie para a máquina de destino o `.tar.gz`, o `.sha256` e o `docker-compose.yml`. No destino só é preciso ter o Docker:
 
 ```bash
+sha256sum -c biblioteca-web-frontend_<tag>.tar.gz.sha256   # confere se o arquivo chegou inteiro
+docker load -i biblioteca-web-frontend_<tag>.tar.gz        # carrega a imagem
 docker network create biblioteca-net
-docker compose up -d --build                              # aqui: sobe o frontend em http://localhost:8081
-(cd ../library-backend && docker compose up -d --build)   # no repositório do backend: sobe a API em http://localhost:8080
+docker compose up -d                                       # usa a imagem carregada, sem rebuildar
 ```
-
-O frontend sobe mesmo sem o backend; as chamadas `/api` respondem 502 até a API ficar de pé. Para derrubar, rode `docker compose down` em cada repositório.
 
 ### Iniciar só o container do frontend
 
