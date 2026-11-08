@@ -1,4 +1,5 @@
 import { Badge, Button, Group, Stack, Table, Text, Title, Tooltip } from '@mantine/core';
+import { PencilSimple, Plus, Trash } from '@phosphor-icons/react';
 import styles from './TableRow.module.css';
 import type { AuthorWithBookCount } from '../types/book';
 
@@ -23,8 +24,12 @@ export function AuthorsPage({
     <Stack gap="md">
       <Group justify="space-between" align="center">
         <Title order={1}>Autores</Title>
-        <Button onClick={onAddAuthor} color="blue">
-          + Cadastrar Autor
+        <Button
+          onClick={onAddAuthor}
+          color="blue"
+          leftSection={<Plus size={16} aria-hidden="true" />}
+        >
+          Cadastrar Autor
         </Button>
       </Group>
 
@@ -77,6 +82,7 @@ export function AuthorsPage({
                       variant="subtle"
                       onClick={() => onEditAuthor(author)}
                       aria-label={`Editar ${author.name}`}
+                      leftSection={<PencilSimple size={14} aria-hidden="true" />}
                     >
                       Editar
                     </Button>
@@ -86,6 +92,7 @@ export function AuthorsPage({
                       color="red"
                       onClick={() => onDeleteAuthor(author)}
                       aria-label={`Excluir ${author.name}`}
+                      leftSection={<Trash size={14} aria-hidden="true" />}
                     >
                       Excluir
                     </Button>

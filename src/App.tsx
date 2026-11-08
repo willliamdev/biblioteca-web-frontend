@@ -12,6 +12,18 @@ import {
   Title,
   useMantineColorScheme,
 } from '@mantine/core';
+import {
+  ArrowClockwise,
+  ArrowsLeftRight,
+  Books,
+  House,
+  Moon,
+  Sun,
+  Trash,
+  UserFocus,
+  UsersThree,
+  X,
+} from '@phosphor-icons/react';
 import { useDisclosure } from '@mantine/hooks';
 import { useState } from 'react';
 import { AuthorFormModal } from './components/AuthorFormModal';
@@ -36,12 +48,12 @@ import { notifyError, notifySuccess } from './utils/feedback';
 
 type View = 'dashboard' | 'books' | 'authors' | 'users' | 'loans';
 
-const NAV_LINKS: { label: string; view: View }[] = [
-  { label: 'Dashboard', view: 'dashboard' },
-  { label: 'Livros', view: 'books' },
-  { label: 'Autores', view: 'authors' },
-  { label: 'Usuários', view: 'users' },
-  { label: 'Empréstimos', view: 'loans' },
+const NAV_LINKS: { label: string; view: View; icon: typeof House }[] = [
+  { label: 'Dashboard', view: 'dashboard', icon: House },
+  { label: 'Livros', view: 'books', icon: Books },
+  { label: 'Autores', view: 'authors', icon: UserFocus },
+  { label: 'Usuários', view: 'users', icon: UsersThree },
+  { label: 'Empréstimos', view: 'loans', icon: ArrowsLeftRight },
 ];
 
 // Dados a recarregar após cada tipo de mutação
@@ -214,6 +226,7 @@ export default function App() {
           <Stack gap="sm" align="flex-start">
             <Text size="sm">{error}</Text>
             <Button color="red" variant="light" onClick={retry}>
+              <ArrowClockwise size={16} aria-hidden="true" />
               Tentar novamente
             </Button>
           </Stack>
@@ -296,6 +309,7 @@ export default function App() {
                 }}
                 justify="left"
                 fullWidth
+                leftSection={<link.icon size={18} aria-hidden="true" />}
               >
                 {link.label}
               </Button>
@@ -320,6 +334,13 @@ export default function App() {
             variant={colorScheme === 'dark' ? 'light' : 'default'}
             onClick={() => toggleColorScheme()}
             size="compact-sm"
+            leftSection={
+              colorScheme === 'dark' ? (
+                <Sun size={16} aria-hidden="true" />
+              ) : (
+                <Moon size={16} aria-hidden="true" />
+              )
+            }
           >
             {colorScheme === 'dark' ? 'Tema claro' : 'Tema escuro'}
           </Button>
@@ -382,10 +403,16 @@ export default function App() {
             variant="default"
             onClick={() => setPendingDelete(null)}
             disabled={deleteInProgress}
+            leftSection={<X size={16} aria-hidden="true" />}
           >
             Cancelar
           </Button>
-          <Button color="red" onClick={() => void handleConfirmDelete()} loading={deleteInProgress}>
+          <Button
+            color="red"
+            onClick={() => void handleConfirmDelete()}
+            loading={deleteInProgress}
+            leftSection={<Trash size={16} aria-hidden="true" />}
+          >
             Excluir
           </Button>
         </Group>

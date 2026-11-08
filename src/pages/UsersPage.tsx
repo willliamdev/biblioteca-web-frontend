@@ -1,4 +1,5 @@
 import { Badge, Button, Group, Stack, Table, Text, Title } from '@mantine/core';
+import { PencilSimple, Plus, Trash } from '@phosphor-icons/react';
 import styles from './TableRow.module.css';
 import type { User } from '../types/user';
 import { formatCpf } from '../utils/format';
@@ -15,8 +16,12 @@ export function UsersPage({ users, onAddUser, onEditUser, onDeleteUser }: UsersP
     <Stack gap="md">
       <Group justify="space-between" align="center">
         <Title order={1}>Usuários</Title>
-        <Button onClick={onAddUser} color="blue">
-          + Cadastrar Usuário
+        <Button
+          onClick={onAddUser}
+          color="blue"
+          leftSection={<Plus size={16} aria-hidden="true" />}
+        >
+          Cadastrar Usuário
         </Button>
       </Group>
 
@@ -56,6 +61,7 @@ export function UsersPage({ users, onAddUser, onEditUser, onDeleteUser }: UsersP
                       variant="subtle"
                       onClick={() => onEditUser(user)}
                       aria-label={`Editar ${user.name}`}
+                      leftSection={<PencilSimple size={14} aria-hidden="true" />}
                     >
                       Editar
                     </Button>
@@ -65,6 +71,7 @@ export function UsersPage({ users, onAddUser, onEditUser, onDeleteUser }: UsersP
                       color="red"
                       onClick={() => onDeleteUser(user)}
                       aria-label={`Excluir ${user.name}`}
+                      leftSection={<Trash size={14} aria-hidden="true" />}
                     >
                       Excluir
                     </Button>

@@ -1,4 +1,5 @@
 import { Button, Group, Stack, Text, TextInput } from '@mantine/core';
+import { FloppyDisk, X } from '@phosphor-icons/react';
 import { useEffect } from 'react';
 import type { Loan } from '../types/loan';
 import { formatDate, todayIso } from '../utils/format';
@@ -78,10 +79,20 @@ export function ReturnLoanModal({
             />
 
             <Group justify="flex-end" mt="md">
-              <Button variant="default" onClick={handleClose} type="button">
+              <Button
+                variant="default"
+                onClick={handleClose}
+                type="button"
+                leftSection={<X size={16} aria-hidden="true" />}
+              >
                 Cancelar
               </Button>
-              <Button type="submit" color="blue" loading={form.submitting}>
+              <Button
+                type="submit"
+                color="blue"
+                loading={form.submitting}
+                leftSection={<FloppyDisk size={16} aria-hidden="true" />}
+              >
                 Registrar devolução
               </Button>
             </Group>
