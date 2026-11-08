@@ -6,6 +6,7 @@ import {
   Center,
   Group,
   Loader,
+  Modal,
   Stack,
   Text,
   Title,
@@ -73,32 +74,33 @@ export default function App() {
   const [editingAuthor, setEditingAuthor] = useState<Author | null>(null);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [returningLoan, setReturningLoan] = useState<Loan | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<DeleteOptions | null>(null);
+  const [deleteInProgress, setDeleteInProgress] = useState(false);
   const { authors, genres, books, users, loans, loading, error, retry, refresh } = useLibraryData();
 
   // Exclusão padrão: confirma, chama a API, notifica e recarrega os dados afetados
-  const confirmAndDelete = async ({
-    confirmMessage,
-    remove,
-    successTitle,
-    successMessage,
-    errorTitle,
-    resources,
-  }: DeleteOptions) => {
-    if (!window.confirm(confirmMessage)) {
+  const confirmAndDelete = (options: DeleteOptions) => setPendingDelete(options);
+
+  const handleConfirmDelete = async () => {
+    if (!pendingDelete || deleteInProgress) {
       return;
     }
 
+    setDeleteInProgress(true);
     try {
-      await remove();
-      notifySuccess(successTitle, successMessage);
-      await refresh(resources);
+      await pendingDelete.remove();
+      notifySuccess(pendingDelete.successTitle, pendingDelete.successMessage);
+      await refresh(pendingDelete.resources);
     } catch (deleteError) {
-      notifyError(deleteError, errorTitle);
+      notifyError(deleteError, pendingDelete.errorTitle);
 
       // Ex.: o registro já foi excluído ou ganhou vínculos em outra aba; atualiza a lista
       if (isOutdatedDataError(deleteError)) {
-        await refresh(resources);
+        await refresh(pendingDelete.resources);
       }
+    } finally {
+      setPendingDelete(null);
+      setDeleteInProgress(false);
     }
   };
 
@@ -362,6 +364,32 @@ export default function App() {
         onOutdatedData={() => void refresh(LOAN_RESOURCES)}
         loan={returningLoan}
       />
+      <Modal
+        opened={pendingDelete !== null}
+        onClose={() => {
+          if (!deleteInProgress) {
+            setPendingDelete(null);
+          }
+        }}
+        title="Confirmar exclusão"
+        centered
+        closeOnEscape={!deleteInProgress}
+        closeOnClickOutside={!deleteInProgress}
+      >
+        <Text style={{ whiteSpace: 'pre-line' }}>{pendingDelete?.confirmMessage}</Text>
+        <Group justify="flex-end" mt="lg">
+          <Button
+            variant="default"
+            onClick={() => setPendingDelete(null)}
+            disabled={deleteInProgress}
+          >
+            Cancelar
+          </Button>
+          <Button color="red" onClick={() => void handleConfirmDelete()} loading={deleteInProgress}>
+            Excluir
+          </Button>
+        </Group>
+      </Modal>
     </AppShell>
   );
 }
