@@ -1,4 +1,5 @@
 import {
+  Affix,
   Alert,
   AppShell,
   Burger,
@@ -324,28 +325,22 @@ export default function App() {
         </div>
       </AppShell.Main>
 
-      <AppShell.Footer p="sm">
-        <Group justify="space-between" align="center">
-          <Text size="xs" c="dimmed">
-            © 2026 Biblioteca
-          </Text>
-
-          <Button
-            variant={colorScheme === 'dark' ? 'light' : 'default'}
-            onClick={() => toggleColorScheme()}
-            size="compact-sm"
-            leftSection={
-              colorScheme === 'dark' ? (
-                <Sun size={16} aria-hidden="true" />
-              ) : (
-                <Moon size={16} aria-hidden="true" />
-              )
-            }
-          >
-            {colorScheme === 'dark' ? 'Tema claro' : 'Tema escuro'}
-          </Button>
-        </Group>
-      </AppShell.Footer>
+      <Affix position={{ bottom: 16, right: 16 }}>
+        <Button
+          variant={colorScheme === 'dark' ? 'light' : 'default'}
+          onClick={() => toggleColorScheme()}
+          size="compact-sm"
+          leftSection={
+            colorScheme === 'dark' ? (
+              <Sun size={16} aria-hidden="true" />
+            ) : (
+              <Moon size={16} aria-hidden="true" />
+            )
+          }
+        >
+          {colorScheme === 'dark' ? 'Tema claro' : 'Tema escuro'}
+        </Button>
+      </Affix>
 
       <BookFormModal
         opened={bookModalOpened}
