@@ -65,7 +65,8 @@ The current types are the source of truth:
 - Prefer Mantine props such as `m`, `p`, `gap`, `mt`, `mb`, `Stack`, `Group` and `Grid` for simple layouts.
 - Do not create raw CSS or CSS modules for simple spacing and layout. The two existing CSS modules (`BooksPage.module.css` and `TableRow.module.css`) only implement the hover effect that reveals the row actions.
 - Keep `@mantine/core/styles.css` and `@mantine/dates/styles.css` loaded in `src/main.tsx`.
-- The icon library and visual language have not been decided. Do not add an icon package or select an icon system without an explicit project decision.
+- Use `@phosphor-icons/react` for interface icons; do not add another icon library.
+- The light color scheme is the default. Keep the in-app control for users to switch to dark mode.
 
 ## Project structure
 
