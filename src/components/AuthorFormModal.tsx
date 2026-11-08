@@ -45,7 +45,7 @@ export function AuthorFormContent({ form, onSubmit, onCancel }: AuthorFormConten
           ) : null}
           <Button
             type="submit"
-            color="blue"
+            color="bibliotecaOrange"
             loading={form.submitting}
             leftSection={<FloppyDisk size={16} aria-hidden="true" />}
           >

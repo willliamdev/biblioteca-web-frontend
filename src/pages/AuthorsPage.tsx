@@ -26,7 +26,7 @@ export function AuthorsPage({
         <Title order={1}>Autores</Title>
         <Button
           onClick={onAddAuthor}
-          color="blue"
+          color="bibliotecaOrange"
           leftSection={<Plus size={16} aria-hidden="true" />}
         >
           Cadastrar Autor

@@ -63,14 +63,14 @@ export function DashboardPage({
         <Group justify="flex-start" align="center">
           <Button
             onClick={onAddBook}
-            color="blue"
+            color="bibliotecaOrange"
             leftSection={<Plus size={16} aria-hidden="true" />}
           >
             Cadastrar Novo Livro
           </Button>
           <Button
             onClick={onAddAuthor}
-            color="blue"
+            color="bibliotecaOrange"
             variant="light"
             leftSection={<Books size={16} aria-hidden="true" />}
           >
@@ -78,7 +78,7 @@ export function DashboardPage({
           </Button>
           <Button
             onClick={onAddLoan}
-            color="blue"
+            color="bibliotecaOrange"
             variant="light"
             leftSection={<BookOpen size={16} aria-hidden="true" />}
           >

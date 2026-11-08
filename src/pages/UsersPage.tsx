@@ -18,7 +18,7 @@ export function UsersPage({ users, onAddUser, onEditUser, onDeleteUser }: UsersP
         <Title order={1}>Usuários</Title>
         <Button
           onClick={onAddUser}
-          color="blue"
+          color="bibliotecaOrange"
           leftSection={<Plus size={16} aria-hidden="true" />}
         >
           Cadastrar Usuário

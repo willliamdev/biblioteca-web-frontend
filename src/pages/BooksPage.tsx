@@ -18,7 +18,7 @@ export function BooksPage({ books, onAddBook, onEditBook, onDeleteBook }: BooksP
         <Title order={1}>Livros</Title>
         <Button
           onClick={onAddBook}
-          color="blue"
+          color="bibliotecaOrange"
           leftSection={<Plus size={16} aria-hidden="true" />}
         >
           Cadastrar Livro

@@ -38,7 +38,7 @@ export function LoansPage({ loans, onAddLoan, onReturnLoan }: LoansPageProps) {
         <Title order={1}>Empréstimos</Title>
         <Button
           onClick={onAddLoan}
-          color="blue"
+          color="bibliotecaOrange"
           leftSection={<Plus size={16} aria-hidden="true" />}
         >
           Novo Empréstimo
