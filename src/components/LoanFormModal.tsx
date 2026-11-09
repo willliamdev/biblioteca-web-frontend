@@ -1,4 +1,5 @@
 import { Button, Group, Select, Stack, TextInput } from '@mantine/core';
+import { FloppyDisk, X } from '@phosphor-icons/react';
 import type { UseFormReturnType } from '@mantine/form';
 import { useEffect, useMemo } from 'react';
 import type { Book } from '../types/book';
@@ -87,11 +88,21 @@ export function LoanFormContent({ form, users, books, onSubmit, onCancel }: Loan
 
         <Group justify="flex-end" mt="md">
           {onCancel ? (
-            <Button variant="default" onClick={onCancel} type="button">
+            <Button
+              variant="default"
+              onClick={onCancel}
+              type="button"
+              leftSection={<X size={16} aria-hidden="true" />}
+            >
               Cancelar
             </Button>
           ) : null}
-          <Button type="submit" color="blue" loading={form.submitting}>
+          <Button
+            type="submit"
+            color="bibliotecaOrange"
+            loading={form.submitting}
+            leftSection={<FloppyDisk size={16} aria-hidden="true" />}
+          >
             Salvar
           </Button>
         </Group>

@@ -1,4 +1,5 @@
 import { Badge, Button, Group, SegmentedControl, Stack, Table, Text, Title } from '@mantine/core';
+import { ArrowUUpLeft, Plus } from '@phosphor-icons/react';
 import { useMemo, useState } from 'react';
 import type { Loan, LoanStatus } from '../types/loan';
 import { formatDate } from '../utils/format';
@@ -35,8 +36,12 @@ export function LoansPage({ loans, onAddLoan, onReturnLoan }: LoansPageProps) {
     <Stack gap="md">
       <Group justify="space-between" align="center">
         <Title order={1}>Empréstimos</Title>
-        <Button onClick={onAddLoan} color="blue">
-          + Novo Empréstimo
+        <Button
+          onClick={onAddLoan}
+          color="bibliotecaOrange"
+          leftSection={<Plus size={16} aria-hidden="true" />}
+        >
+          Novo Empréstimo
         </Button>
       </Group>
 
@@ -90,6 +95,7 @@ export function LoansPage({ loans, onAddLoan, onReturnLoan }: LoansPageProps) {
                       variant="light"
                       onClick={() => onReturnLoan(loan)}
                       aria-label={`Registrar devolução de ${loan.book.title}`}
+                      leftSection={<ArrowUUpLeft size={14} aria-hidden="true" />}
                     >
                       Registrar devolução
                     </Button>

@@ -1,4 +1,5 @@
 import { Badge, Button, Group, Stack, Table, Text, Title } from '@mantine/core';
+import { PencilSimple, Plus, Trash } from '@phosphor-icons/react';
 import dayjs from 'dayjs';
 import styles from './BooksPage.module.css';
 import type { Book } from '../types/book';
@@ -15,8 +16,12 @@ export function BooksPage({ books, onAddBook, onEditBook, onDeleteBook }: BooksP
     <Stack gap="md">
       <Group justify="space-between" align="center">
         <Title order={1}>Livros</Title>
-        <Button onClick={onAddBook} color="blue">
-          + Cadastrar Livro
+        <Button
+          onClick={onAddBook}
+          color="bibliotecaOrange"
+          leftSection={<Plus size={16} aria-hidden="true" />}
+        >
+          Cadastrar Livro
         </Button>
       </Group>
 
@@ -62,6 +67,7 @@ export function BooksPage({ books, onAddBook, onEditBook, onDeleteBook }: BooksP
                       variant="subtle"
                       onClick={() => onEditBook(book)}
                       aria-label={`Editar ${book.title}`}
+                      leftSection={<PencilSimple size={14} aria-hidden="true" />}
                     >
                       Editar
                     </Button>
@@ -71,6 +77,7 @@ export function BooksPage({ books, onAddBook, onEditBook, onDeleteBook }: BooksP
                       color="red"
                       onClick={() => onDeleteBook(book)}
                       aria-label={`Excluir ${book.title}`}
+                      leftSection={<Trash size={14} aria-hidden="true" />}
                     >
                       Excluir
                     </Button>

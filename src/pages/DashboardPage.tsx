@@ -1,4 +1,5 @@
 import { Button, Group, Stack, Text, Title } from '@mantine/core';
+import { BookOpen, Books, Plus } from '@phosphor-icons/react';
 import type { StatsProps } from '../components/StatsCard';
 import { StatsContainer } from '../components/StatusContainer';
 import type { Author, Book } from '../types/book';
@@ -60,14 +61,28 @@ export function DashboardPage({
           Ações Rápidas
         </Title>
         <Group justify="flex-start" align="center">
-          <Button onClick={onAddBook} color="blue">
-            + Cadastrar Novo Livro
+          <Button
+            onClick={onAddBook}
+            color="bibliotecaOrange"
+            leftSection={<Plus size={16} aria-hidden="true" />}
+          >
+            Cadastrar Novo Livro
           </Button>
-          <Button onClick={onAddAuthor} color="blue" variant="light">
-            + Cadastrar Autor
+          <Button
+            onClick={onAddAuthor}
+            color="bibliotecaOrange"
+            variant="light"
+            leftSection={<Books size={16} aria-hidden="true" />}
+          >
+            Cadastrar Autor
           </Button>
-          <Button onClick={onAddLoan} color="blue" variant="light">
-            + Novo Empréstimo
+          <Button
+            onClick={onAddLoan}
+            color="bibliotecaOrange"
+            variant="light"
+            leftSection={<BookOpen size={16} aria-hidden="true" />}
+          >
+            Novo Empréstimo
           </Button>
         </Group>
       </div>

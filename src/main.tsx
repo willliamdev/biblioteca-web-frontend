@@ -14,9 +14,28 @@ import '@mantine/notifications/styles.css';
 // Configura o idioma das datas para Português do Brasil
 dayjs.locale('pt-br');
 
+const theme = {
+  colors: {
+    bibliotecaOrange: [
+      '#fff1eb',
+      '#ffddcf',
+      '#ffc2a8',
+      '#ffa47d',
+      '#ff8150',
+      '#ff6730',
+      '#f94d12',
+      '#e64008',
+      '#c93606',
+      '#a92c05',
+    ] as const,
+  },
+  primaryColor: 'bibliotecaOrange',
+  primaryShade: 6 as const,
+};
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <MantineProvider defaultColorScheme="auto">
+    <MantineProvider defaultColorScheme="light" theme={theme}>
       <Notifications position="top-right" />
       <App />
     </MantineProvider>
