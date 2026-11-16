@@ -24,6 +24,12 @@ Repositório irmão: `library-backend` (API Spring Boot em `../library-backend`)
 | --- | --- |
 | [docker/imagem.md](docker/imagem.md) | Imagem de produção (Node e Nginx): Dockerfile, template do Nginx, variáveis `VITE_API_URL`, `API_UPSTREAM` e `NGINX_RESOLVER`, `scripts/build-image.sh`, execução sozinha e com o docker-compose do frontend (rede `biblioteca-net`), validação e problemas comuns. |
 
+## Qualidade (QA)
+
+| Documento | Descrição |
+| --- | --- |
+| [qa/relatorio-testes.md](qa/relatorio-testes.md) | Relatório da rodada de QA de 16/11/2026 (parte do front): 50 casos (Nginx, proxy `/api` e telas no navegador), falhas com correções sugeridas e divergências entre a documentação e o comportamento. |
+
 ## Modelo de dados
 
 | Documento | Descrição |
@@ -35,6 +41,7 @@ Repositório irmão: `library-backend` (API Spring Boot em `../library-backend`)
 | Documento | Descrição |
 | --- | --- |
 | [changelog/front/2026-10-29-integracao-api-autores-docker.md](changelog/front/2026-10-29-integracao-api-autores-docker.md) | Integração com a API, tela de Autores, devolução com data efetiva, imagem Docker com proxy `/api` e correções da revisão (trabalho de 28 e 29/10/2026). |
+| [changelog/front/2026-11-16-relatorio-testes-qa.md](changelog/front/2026-11-16-relatorio-testes-qa.md) | Inclusão do relatório de QA (só documentação; nenhum código alterado). |
 
 ## Arquivos de referência (não são documentos)
 
@@ -50,6 +57,6 @@ Repositório irmão: `library-backend` (API Spring Boot em `../library-backend`)
 
 ## Como manter este índice
 
-- Documentação em português, em subpastas por área: `docs/<área>/arquivo.md` (áreas atuais: `integracao`, `docker` e `changelog/front`).
+- Documentação em português, em subpastas por área: `docs/<área>/arquivo.md` (áreas atuais: `integracao`, `docker`, `qa` e `changelog/front`).
 - Toda entrega relevante ganha uma entrada em `docs/changelog/front/AAAA-MM-DD-descricao.md`, com o que mudou, por quê e como validar.
 - Todo documento novo entra neste índice, com link relativo e uma linha de descrição.
