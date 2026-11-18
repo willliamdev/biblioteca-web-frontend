@@ -1,6 +1,6 @@
-import { Badge, Button, Group, Stack, Table, Text, Title, Tooltip } from '@mantine/core';
-import { PencilSimple, Plus, Trash } from '@phosphor-icons/react';
-import { useCallback } from 'react';
+import { Badge, Button, Group, Stack, Table, Text, TextInput, Title, Tooltip } from '@mantine/core';
+import { MagnifyingGlass, PencilSimple, Plus, Trash } from '@phosphor-icons/react';
+import { useCallback, useMemo, useState } from 'react';
 import { SortableTableHeader } from '../components/SortableTableHeader';
 import { useSortableData } from '../hooks/useSortableData';
 import styles from './TableRow.module.css';
@@ -25,11 +25,32 @@ export function AuthorsPage({
   onEditAuthor,
   onDeleteAuthor,
 }: AuthorsPageProps) {
+  const [searchTerm, setSearchTerm] = useState('');
   const getSortValue = useCallback(
     (author: AuthorWithBookCount, key: AuthorSortKey) => author[key],
     []
   );
-  const { sortedData, sortKey, direction, requestSort } = useSortableData(authors, getSortValue);
+  const filteredAuthors = useMemo(() => {
+    const normalizedSearch = searchTerm
+      .trim()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLocaleLowerCase('pt-BR');
+
+    if (!normalizedSearch) return authors;
+
+    return authors.filter((author) =>
+      author.name
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLocaleLowerCase('pt-BR')
+        .includes(normalizedSearch)
+    );
+  }, [authors, searchTerm]);
+  const { sortedData, sortKey, direction, requestSort } = useSortableData(
+    filteredAuthors,
+    getSortValue
+  );
   const header = (key: AuthorSortKey, label: string) => (
     <SortableTableHeader
       label={label}
@@ -52,6 +73,15 @@ export function AuthorsPage({
         </Button>
       </Group>
 
+      <TextInput
+        placeholder="Buscar autor pelo nome"
+        aria-label="Buscar autor pelo nome"
+        leftSection={<MagnifyingGlass size={16} aria-hidden="true" />}
+        value={searchTerm}
+        onChange={(event) => setSearchTerm(event.currentTarget.value)}
+        maw={400}
+      />
+
       <Table.ScrollContainer minWidth={500}>
         <Table striped highlightOnHover withTableBorder>
           <Table.Thead>
@@ -67,6 +97,14 @@ export function AuthorsPage({
                 <Table.Td colSpan={3}>
                   <Text c="dimmed" ta="center" size="sm">
                     Nenhum autor cadastrado.
+                  </Text>
+                </Table.Td>
+              </Table.Tr>
+            ) : filteredAuthors.length === 0 ? (
+              <Table.Tr>
+                <Table.Td colSpan={3}>
+                  <Text c="dimmed" ta="center" size="sm">
+                    Nenhum autor encontrado.
                   </Text>
                 </Table.Td>
               </Table.Tr>

@@ -1,7 +1,7 @@
-import { Badge, Button, Group, Stack, Table, Text, Title } from '@mantine/core';
-import { PencilSimple, Plus, Trash } from '@phosphor-icons/react';
+import { Badge, Button, Group, Stack, Table, Text, TextInput, Title } from '@mantine/core';
+import { MagnifyingGlass, PencilSimple, Plus, Trash } from '@phosphor-icons/react';
 import dayjs from 'dayjs';
-import { useCallback } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { SortableTableHeader } from '../components/SortableTableHeader';
 import { useSortableData } from '../hooks/useSortableData';
 import styles from './BooksPage.module.css';
@@ -17,6 +17,7 @@ interface BooksPageProps {
 }
 
 export function BooksPage({ books, onAddBook, onEditBook, onDeleteBook }: BooksPageProps) {
+  const [searchTerm, setSearchTerm] = useState('');
   const getSortValue = useCallback((book: Book, key: BookSortKey) => {
     switch (key) {
       case 'title':
@@ -33,7 +34,27 @@ export function BooksPage({ books, onAddBook, onEditBook, onDeleteBook }: BooksP
         return book.available ? 'Disponível' : 'Emprestado';
     }
   }, []);
-  const { sortedData, sortKey, direction, requestSort } = useSortableData(books, getSortValue);
+  const filteredBooks = useMemo(() => {
+    const normalizedSearch = searchTerm
+      .trim()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLocaleLowerCase('pt-BR');
+
+    if (!normalizedSearch) return books;
+
+    return books.filter((book) =>
+      book.title
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLocaleLowerCase('pt-BR')
+        .includes(normalizedSearch)
+    );
+  }, [books, searchTerm]);
+  const { sortedData, sortKey, direction, requestSort } = useSortableData(
+    filteredBooks,
+    getSortValue
+  );
   const header = (key: BookSortKey, label: string) => (
     <SortableTableHeader
       label={label}
@@ -56,6 +77,15 @@ export function BooksPage({ books, onAddBook, onEditBook, onDeleteBook }: BooksP
         </Button>
       </Group>
 
+      <TextInput
+        placeholder="Buscar livro pelo título"
+        aria-label="Buscar livro pelo título"
+        leftSection={<MagnifyingGlass size={16} aria-hidden="true" />}
+        value={searchTerm}
+        onChange={(event) => setSearchTerm(event.currentTarget.value)}
+        maw={400}
+      />
+
       <Table.ScrollContainer minWidth={900}>
         <Table striped highlightOnHover withTableBorder>
           <Table.Thead>
@@ -75,6 +105,14 @@ export function BooksPage({ books, onAddBook, onEditBook, onDeleteBook }: BooksP
                 <Table.Td colSpan={7}>
                   <Text c="dimmed" ta="center" size="sm">
                     Nenhum livro cadastrado.
+                  </Text>
+                </Table.Td>
+              </Table.Tr>
+            ) : filteredBooks.length === 0 ? (
+              <Table.Tr>
+                <Table.Td colSpan={7}>
+                  <Text c="dimmed" ta="center" size="sm">
+                    Nenhum livro encontrado.
                   </Text>
                 </Table.Td>
               </Table.Tr>

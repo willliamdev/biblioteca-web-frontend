@@ -1,6 +1,6 @@
-import { Badge, Button, Group, Stack, Table, Text, Title } from '@mantine/core';
-import { PencilSimple, Plus, Trash } from '@phosphor-icons/react';
-import { useCallback } from 'react';
+import { Badge, Button, Group, Stack, Table, Text, TextInput, Title } from '@mantine/core';
+import { MagnifyingGlass, PencilSimple, Plus, Trash } from '@phosphor-icons/react';
+import { useCallback, useMemo, useState } from 'react';
 import { SortableTableHeader } from '../components/SortableTableHeader';
 import { useSortableData } from '../hooks/useSortableData';
 import styles from './TableRow.module.css';
@@ -17,6 +17,7 @@ interface UsersPageProps {
 }
 
 export function UsersPage({ users, onAddUser, onEditUser, onDeleteUser }: UsersPageProps) {
+  const [searchTerm, setSearchTerm] = useState('');
   const getSortValue = useCallback((user: User, key: UserSortKey) => {
     switch (key) {
       case 'name':
@@ -27,7 +28,27 @@ export function UsersPage({ users, onAddUser, onEditUser, onDeleteUser }: UsersP
         return user.debtFree ? 'Sem pendências' : 'Com pendências';
     }
   }, []);
-  const { sortedData, sortKey, direction, requestSort } = useSortableData(users, getSortValue);
+  const filteredUsers = useMemo(() => {
+    const normalizedSearch = searchTerm
+      .trim()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLocaleLowerCase('pt-BR');
+
+    if (!normalizedSearch) return users;
+
+    return users.filter((user) =>
+      user.name
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLocaleLowerCase('pt-BR')
+        .includes(normalizedSearch)
+    );
+  }, [users, searchTerm]);
+  const { sortedData, sortKey, direction, requestSort } = useSortableData(
+    filteredUsers,
+    getSortValue
+  );
   const header = (key: UserSortKey, label: string) => (
     <SortableTableHeader
       label={label}
@@ -50,6 +71,15 @@ export function UsersPage({ users, onAddUser, onEditUser, onDeleteUser }: UsersP
         </Button>
       </Group>
 
+      <TextInput
+        placeholder="Buscar usuário pelo nome"
+        aria-label="Buscar usuário pelo nome"
+        leftSection={<MagnifyingGlass size={16} aria-hidden="true" />}
+        value={searchTerm}
+        onChange={(event) => setSearchTerm(event.currentTarget.value)}
+        maw={400}
+      />
+
       <Table.ScrollContainer minWidth={600}>
         <Table striped highlightOnHover withTableBorder>
           <Table.Thead>
@@ -66,6 +96,14 @@ export function UsersPage({ users, onAddUser, onEditUser, onDeleteUser }: UsersP
                 <Table.Td colSpan={4}>
                   <Text c="dimmed" ta="center" size="sm">
                     Nenhum usuário cadastrado.
+                  </Text>
+                </Table.Td>
+              </Table.Tr>
+            ) : filteredUsers.length === 0 ? (
+              <Table.Tr>
+                <Table.Td colSpan={4}>
+                  <Text c="dimmed" ta="center" size="sm">
+                    Nenhum usuário encontrado.
                   </Text>
                 </Table.Td>
               </Table.Tr>
