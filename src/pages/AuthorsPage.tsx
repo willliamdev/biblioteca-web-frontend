@@ -1,7 +1,12 @@
 import { Badge, Button, Group, Stack, Table, Text, Title, Tooltip } from '@mantine/core';
 import { PencilSimple, Plus, Trash } from '@phosphor-icons/react';
+import { useCallback } from 'react';
+import { SortableTableHeader } from '../components/SortableTableHeader';
+import { useSortableData } from '../hooks/useSortableData';
 import styles from './TableRow.module.css';
 import type { AuthorWithBookCount } from '../types/book';
+
+type AuthorSortKey = 'name' | 'bookCount';
 
 // Regra do acervo (multiplicidade Livro 1..* — 1 Autor): o autor fica sinalizado, sem bloquear o cadastro
 const NO_BOOKS_HINT =
@@ -20,6 +25,20 @@ export function AuthorsPage({
   onEditAuthor,
   onDeleteAuthor,
 }: AuthorsPageProps) {
+  const getSortValue = useCallback(
+    (author: AuthorWithBookCount, key: AuthorSortKey) => author[key],
+    []
+  );
+  const { sortedData, sortKey, direction, requestSort } = useSortableData(authors, getSortValue);
+  const header = (key: AuthorSortKey, label: string) => (
+    <SortableTableHeader
+      label={label}
+      active={sortKey === key}
+      direction={direction}
+      onSort={() => requestSort(key)}
+    />
+  );
+
   return (
     <Stack gap="md">
       <Group justify="space-between" align="center">
@@ -37,8 +56,8 @@ export function AuthorsPage({
         <Table striped highlightOnHover withTableBorder>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>Nome</Table.Th>
-              <Table.Th>Qtde. de livros</Table.Th>
+              {header('name', 'Nome')}
+              {header('bookCount', 'Qtde. de livros')}
               <Table.Th>Ações</Table.Th>
             </Table.Tr>
           </Table.Thead>
@@ -52,7 +71,7 @@ export function AuthorsPage({
                 </Table.Td>
               </Table.Tr>
             ) : null}
-            {authors.map((author) => (
+            {sortedData.map((author) => (
               <Table.Tr key={author.id} className={styles.row}>
                 <Table.Td>{author.name}</Table.Td>
                 <Table.Td>

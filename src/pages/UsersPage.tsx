@@ -1,8 +1,13 @@
 import { Badge, Button, Group, Stack, Table, Text, Title } from '@mantine/core';
 import { PencilSimple, Plus, Trash } from '@phosphor-icons/react';
+import { useCallback } from 'react';
+import { SortableTableHeader } from '../components/SortableTableHeader';
+import { useSortableData } from '../hooks/useSortableData';
 import styles from './TableRow.module.css';
 import type { User } from '../types/user';
 import { formatCpf } from '../utils/format';
+
+type UserSortKey = 'name' | 'cpf' | 'debtFree';
 
 interface UsersPageProps {
   users: User[];
@@ -12,6 +17,26 @@ interface UsersPageProps {
 }
 
 export function UsersPage({ users, onAddUser, onEditUser, onDeleteUser }: UsersPageProps) {
+  const getSortValue = useCallback((user: User, key: UserSortKey) => {
+    switch (key) {
+      case 'name':
+        return user.name;
+      case 'cpf':
+        return user.cpf.replace(/\D/g, '');
+      case 'debtFree':
+        return user.debtFree ? 'Sem pendências' : 'Com pendências';
+    }
+  }, []);
+  const { sortedData, sortKey, direction, requestSort } = useSortableData(users, getSortValue);
+  const header = (key: UserSortKey, label: string) => (
+    <SortableTableHeader
+      label={label}
+      active={sortKey === key}
+      direction={direction}
+      onSort={() => requestSort(key)}
+    />
+  );
+
   return (
     <Stack gap="md">
       <Group justify="space-between" align="center">
@@ -29,9 +54,9 @@ export function UsersPage({ users, onAddUser, onEditUser, onDeleteUser }: UsersP
         <Table striped highlightOnHover withTableBorder>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>Nome</Table.Th>
-              <Table.Th>CPF</Table.Th>
-              <Table.Th>Situação</Table.Th>
+              {header('name', 'Nome')}
+              {header('cpf', 'CPF')}
+              {header('debtFree', 'Situação')}
               <Table.Th>Ações</Table.Th>
             </Table.Tr>
           </Table.Thead>
@@ -45,7 +70,7 @@ export function UsersPage({ users, onAddUser, onEditUser, onDeleteUser }: UsersP
                 </Table.Td>
               </Table.Tr>
             ) : null}
-            {users.map((user) => (
+            {sortedData.map((user) => (
               <Table.Tr key={user.id} className={styles.row}>
                 <Table.Td>{user.name}</Table.Td>
                 <Table.Td>{formatCpf(user.cpf)}</Table.Td>

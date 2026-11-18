@@ -1,8 +1,13 @@
 import { Badge, Button, Group, Stack, Table, Text, Title } from '@mantine/core';
 import { PencilSimple, Plus, Trash } from '@phosphor-icons/react';
 import dayjs from 'dayjs';
+import { useCallback } from 'react';
+import { SortableTableHeader } from '../components/SortableTableHeader';
+import { useSortableData } from '../hooks/useSortableData';
 import styles from './BooksPage.module.css';
 import type { Book } from '../types/book';
+
+type BookSortKey = 'title' | 'genre' | 'author' | 'publicationDate' | 'publisher' | 'available';
 
 interface BooksPageProps {
   books: Book[];
@@ -12,6 +17,32 @@ interface BooksPageProps {
 }
 
 export function BooksPage({ books, onAddBook, onEditBook, onDeleteBook }: BooksPageProps) {
+  const getSortValue = useCallback((book: Book, key: BookSortKey) => {
+    switch (key) {
+      case 'title':
+        return book.title;
+      case 'genre':
+        return book.genre.name;
+      case 'author':
+        return book.author.name;
+      case 'publicationDate':
+        return book.publicationDate;
+      case 'publisher':
+        return book.publisher;
+      case 'available':
+        return book.available ? 'Disponível' : 'Emprestado';
+    }
+  }, []);
+  const { sortedData, sortKey, direction, requestSort } = useSortableData(books, getSortValue);
+  const header = (key: BookSortKey, label: string) => (
+    <SortableTableHeader
+      label={label}
+      active={sortKey === key}
+      direction={direction}
+      onSort={() => requestSort(key)}
+    />
+  );
+
   return (
     <Stack gap="md">
       <Group justify="space-between" align="center">
@@ -29,12 +60,12 @@ export function BooksPage({ books, onAddBook, onEditBook, onDeleteBook }: BooksP
         <Table striped highlightOnHover withTableBorder>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>Título</Table.Th>
-              <Table.Th>Gênero</Table.Th>
-              <Table.Th>Autor</Table.Th>
-              <Table.Th>Lançamento</Table.Th>
-              <Table.Th>Editora</Table.Th>
-              <Table.Th>Situação</Table.Th>
+              {header('title', 'Título')}
+              {header('genre', 'Gênero')}
+              {header('author', 'Autor')}
+              {header('publicationDate', 'Lançamento')}
+              {header('publisher', 'Editora')}
+              {header('available', 'Situação')}
               <Table.Th>Ações</Table.Th>
             </Table.Tr>
           </Table.Thead>
@@ -48,7 +79,7 @@ export function BooksPage({ books, onAddBook, onEditBook, onDeleteBook }: BooksP
                 </Table.Td>
               </Table.Tr>
             ) : null}
-            {books.map((book) => (
+            {sortedData.map((book) => (
               <Table.Tr key={book.id} className={styles.bookRow}>
                 <Table.Td>{book.title}</Table.Td>
                 <Table.Td>{book.genre.name}</Table.Td>

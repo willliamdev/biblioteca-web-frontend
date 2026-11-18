@@ -28,3 +28,4 @@ images/
 
 # Dados mock locais
 /src/services/mockData.ts
+.env

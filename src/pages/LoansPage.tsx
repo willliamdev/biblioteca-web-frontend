@@ -1,9 +1,12 @@
 import { Badge, Button, Group, SegmentedControl, Stack, Table, Text, Title } from '@mantine/core';
 import { ArrowUUpLeft, Plus } from '@phosphor-icons/react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { SortableTableHeader } from '../components/SortableTableHeader';
+import { useSortableData } from '../hooks/useSortableData';
 import type { Loan, LoanStatus } from '../types/loan';
 import { formatDate } from '../utils/format';
 
+type LoanSortKey = 'book' | 'user' | 'startDate' | 'endDate' | 'returnDate' | 'status';
 type LoanFilter = LoanStatus | 'TODOS';
 
 const STATUS_BADGES: Record<LoanStatus, { label: string; color: string }> = {
@@ -31,6 +34,36 @@ export function LoansPage({ loans, onAddLoan, onReturnLoan }: LoansPageProps) {
     () => (filter === 'TODOS' ? loans : loans.filter((loan) => loan.status === filter)),
     [filter, loans]
   );
+  const getSortValue = useCallback((loan: Loan, key: LoanSortKey) => {
+    switch (key) {
+      case 'book':
+        return loan.book.title;
+      case 'user':
+        return loan.user.name;
+      case 'startDate':
+        return loan.startDate;
+      case 'endDate':
+        return loan.endDate;
+      case 'returnDate':
+        return loan.returnDate ?? null;
+      case 'status':
+        return STATUS_BADGES[loan.status].label;
+    }
+  }, []);
+  const {
+    sortedData: sortedLoans,
+    sortKey,
+    direction,
+    requestSort,
+  } = useSortableData(filteredLoans, getSortValue);
+  const header = (key: LoanSortKey, label: string) => (
+    <SortableTableHeader
+      label={label}
+      active={sortKey === key}
+      direction={direction}
+      onSort={() => requestSort(key)}
+    />
+  );
 
   return (
     <Stack gap="md">
@@ -53,12 +86,12 @@ export function LoansPage({ loans, onAddLoan, onReturnLoan }: LoansPageProps) {
         <Table striped highlightOnHover withTableBorder>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>Livro</Table.Th>
-              <Table.Th>Usuário</Table.Th>
-              <Table.Th>Início</Table.Th>
-              <Table.Th>Devolução prevista</Table.Th>
-              <Table.Th>Devolvido em</Table.Th>
-              <Table.Th>Status</Table.Th>
+              {header('book', 'Livro')}
+              {header('user', 'Usuário')}
+              {header('startDate', 'Início')}
+              {header('endDate', 'Devolução prevista')}
+              {header('returnDate', 'Devolvido em')}
+              {header('status', 'Status')}
               <Table.Th>Ações</Table.Th>
             </Table.Tr>
           </Table.Thead>
@@ -72,7 +105,7 @@ export function LoansPage({ loans, onAddLoan, onReturnLoan }: LoansPageProps) {
                 </Table.Td>
               </Table.Tr>
             ) : null}
-            {filteredLoans.map((loan) => (
+            {sortedLoans.map((loan) => (
               <Table.Tr key={loan.id}>
                 <Table.Td>{loan.book.title}</Table.Td>
                 <Table.Td>{loan.user.name}</Table.Td>
