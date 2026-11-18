@@ -74,18 +74,23 @@ async function request<T>(method: HttpMethod, path: string, body?: unknown): Pro
   }
 
   let response: Response;
-  let text: string;
 
-  try {
-    response = await fetch(`${API_URL}${path}`, {
-      method,
-      headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
-    });
-    text = response.status === 204 ? '' : await response.text();
-  } catch {
-    throw new ApiError(0, UNREACHABLE_MESSAGE);
+  if (import.meta.env.VITE_API_MOCK === 'true') {
+    const { handleMockRequest } = await import('./mockApi');
+    response = await handleMockRequest(method, path, body);
+  } else {
+    try {
+      response = await fetch(`${API_URL}${path}`, {
+        method,
+        headers,
+        body: body === undefined ? undefined : JSON.stringify(body),
+      });
+    } catch {
+      throw new ApiError(0, UNREACHABLE_MESSAGE);
+    }
   }
+
+  const text = response.status === 204 ? '' : await response.text();
 
   let data: unknown = undefined;
   let invalidJson = false;
