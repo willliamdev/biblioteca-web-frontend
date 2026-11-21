@@ -73,6 +73,7 @@ cp .env.example .env.local
 | --- | --- | --- |
 | `VITE_API_URL` | `/api` | URL base da API usada pelo navegador. É embutida no bundle em tempo de build. Com `/api`, as chamadas passam pelo proxy (Vite em desenvolvimento, Nginx na imagem Docker), que remove o prefixo `/api` antes de repassar ao backend. |
 | `VITE_PROXY_TARGET` | `http://localhost:8080` | Destino do proxy do Vite em `npm run dev` e `npm run preview`. Só é lida pelo `vite.config.ts`; não vai para o bundle. |
+| `VITE_API_MOCK` | `false` | Defina como `true` para usar `src/services/mockApi.ts` em vez de chamadas HTTP reais; use apenas para desenvolvimento local isolado. |
 
 Mantenha `VITE_API_URL=/api`. Com uma URL absoluta (ex.: `http://localhost:8080`) o navegador chama o backend direto, sem o proxy, e o backend só aceita as origens liberadas no CORS (por padrão `http://localhost:5173` e `http://localhost:4173`).
 
@@ -231,7 +232,7 @@ npm run preview
 src/
 ├── App.tsx                  # Casca da aplicação (AppShell), navegação entre telas, modais e exclusões
 ├── main.tsx                 # Entrada do React, MantineProvider, Notifications e locale do Day.js
-├── vite-env.d.ts            # Tipos das variáveis de ambiente (VITE_API_URL)
+├── vite-env.d.ts            # Tipos das variáveis de ambiente (VITE_API_URL, VITE_API_MOCK)
 ├── pages/                   # Uma página por tela
 │   ├── DashboardPage.tsx
 │   ├── BooksPage.tsx        # + BooksPage.module.css (ações da linha visíveis ao passar o mouse)
@@ -247,9 +248,11 @@ src/
 │   ├── LoanFormModal.tsx    # + useLoanForm.ts
 │   ├── ReturnLoanModal.tsx  # + useReturnLoanForm.ts
 │   ├── StatsCard.tsx
-│   └── StatusContainer.tsx
+│   ├── StatusContainer.tsx
+│   └── SortableTableHeader.tsx
 ├── hooks/
-│   └── useLibraryData.ts    # Carrega os dados da API e recarrega só o necessário (refresh)
+│   ├── useLibraryData.ts    # Carrega os dados da API e recarrega só o necessário (refresh)
+│   └── useSortableData.ts   # Ordenação compartilhada das tabelas
 ├── services/                # Única camada que fala com a API
 │   ├── api.ts               # Cliente HTTP (fetch), ApiError, getErrorMessage, isOutdatedDataError
 │   ├── authorService.ts
@@ -257,7 +260,7 @@ src/
 │   ├── genreService.ts
 │   ├── loanService.ts       # Mapeia o recurso /lendings da API para o tipo Loan
 │   ├── userService.ts
-│   └── mockData.ts          # Mocks antigos, mantidos só como referência (não é importado)
+│   └── mockApi.ts           # Implementação em memória ativada por VITE_API_MOCK=true
 ├── types/                   # Tipos e DTOs compartilhados (book.ts, loan.ts, user.ts)
 └── utils/
     ├── feedback.ts          # Notificações e erros de campo vindos da API nos formulários
@@ -268,7 +271,7 @@ scripts/                     # build-image.sh: gera a imagem Docker e o .tar.gz 
 docs/                        # Documentação e imagens do projeto (comece por docs/INDEX.md)
 public/                      # Arquivos públicos servidos sem processamento
 Dockerfile                   # Build em dois estágios: Vite (Node) e Nginx
-.env.example                 # Variáveis de ambiente (VITE_API_URL, VITE_PROXY_TARGET)
+.env.example                 # Variáveis de ambiente (VITE_API_URL, VITE_PROXY_TARGET, VITE_API_MOCK)
 vite.config.ts               # Plugin do React e proxy /api (dev e preview)
 ```
 
@@ -391,7 +394,7 @@ Os arquivos de instrução devem ser versionados junto com o projeto. Não coloq
 - Textos visíveis para o usuário podem ficar em português.
 - Siga a formatação do Prettier. Rode `npm run format` antes de enviar.
 - Use TypeScript e evite `any` quando um tipo puder ser definido.
-- Os dados vêm da API: chamadas HTTP ficam em `src/services`, e o mapeamento entre o formato do backend e o do frontend também (ex.: `publishDate` <-> `publicationDate`). Não chame `fetch` direto em componentes e não importe `src/services/mockData.ts`.
+- Os dados vêm da API: chamadas HTTP ficam em `src/services`, e o mapeamento entre o formato do backend e o do frontend também (ex.: `publishDate` <-> `publicationDate`). Não chame `fetch` direto em componentes e não acesse `src/services/mockApi.ts` fora do cliente HTTP.
 - Avisos de sucesso e erro usam `notifySuccess` e `notifyError` de `src/utils/feedback.ts`; erros de validação da API nos formulários usam `handleFormError`.
 - Prefira componentes pequenos e reutilizáveis.
 - Não envie código quebrado, imports não utilizados ou `console.log` de teste.

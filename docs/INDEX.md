@@ -51,7 +51,7 @@ Repositório irmão: `library-backend` (API Spring Boot em `../library-backend`)
 | [../docker-compose.yml](../docker-compose.yml) | Sobe só o frontend, na rede `biblioteca-net` compartilhada com o backend. |
 | [../nginx/default.conf.template](../nginx/default.conf.template) | Template do Nginx: SPA, proxy `/api/` e cache. |
 | [../scripts/build-image.sh](../scripts/build-image.sh) | Gera a imagem e o `.tar.gz` com checksum. |
-| [../.env.example](../.env.example) | Variáveis de ambiente (`VITE_API_URL`, `VITE_PROXY_TARGET`). |
+| [../.env.example](../.env.example) | Variáveis de ambiente (`VITE_API_URL`, `VITE_PROXY_TARGET`, `VITE_API_MOCK`). |
 | [../vite.config.ts](../vite.config.ts) | Proxy `/api` do Vite (dev e preview). |
 | [../src/types](../src/types) | Tipos de domínio e DTOs (fonte de verdade para o código). |
 

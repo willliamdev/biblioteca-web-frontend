@@ -25,9 +25,7 @@ export interface Book {
   genre: Genre;
   publicationDate: string;
   publisher: string;
-  // true quando o livro não tem empréstimo em aberto. A API sempre preenche o campo;
-  // ele é opcional apenas para manter os dados de src/services/mockData.ts válidos.
-  available?: boolean;
+  available: boolean;
 }
 
 // Data Transfer Object - Objeto de Transferência de Dados

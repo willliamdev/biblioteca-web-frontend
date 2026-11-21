@@ -18,7 +18,7 @@ These instructions apply to AI assistants working on the Biblioteca Web Frontend
 
 - Names of variables, functions, components, interfaces, types and new files must be in English.
 - User-facing labels, messages and notifications must be in Brazilian Portuguese.
-- Preserve existing names in `src/services/mockData.ts` unless a rename is explicitly requested; current mock exports use Portuguese names. That file is kept only as a reference: no application code imports it, and new code must not import it either (see "Data access").
+- `src/services/mockApi.ts` is the optional in-memory API implementation enabled by `VITE_API_MOCK=true`. It must keep the same routes and response shapes as the real services; normal builds use the real API.
 
 ### TypeScript
 
@@ -34,8 +34,8 @@ The current types are the source of truth:
 - `User`: `id`, `name`, `cpf` and `debtFree` (`false` when the user has an overdue loan).
 - `Author` and `Genre`: `id` and `name`.
 - `AuthorWithBookCount` and `GenreWithBookCount`: `Author`/`Genre` plus `bookCount`. They are the format returned by the author and genre listings (`authorService` and `genreService`).
-- `Book`: `id`, `title`, `author`, `genre`, `publicationDate`, `publisher` and `available`. The API always fills `available` (`true` when the book has no open loan); it is optional in the type only to keep `src/services/mockData.ts` valid.
-- `Loan`: `id`, `startDate`, `endDate`, `returnDate`, `user`, `book` and `status`. `returnDate` is the effective return date (`string | null`, `null` until the book is returned); the API always fills it, and it is optional in the type only for `mockData.ts`.
+- `Book`: `id`, `title`, `author`, `genre`, `publicationDate`, `publisher` and `available`. The API always fills `available` (`true` when the book has no open loan).
+- `Loan`: `id`, `startDate`, `endDate`, `returnDate`, `user`, `book` and `status`. `returnDate` is the effective return date (`string | null`, `null` until the book is returned); the API always fills it.
 - Creation DTOs: `CreateBookDTO`, `CreateAuthorDTO`, `CreateGenreDTO`, `CreateUserDTO` and `CreateLoanDTO`. Do not invent `CreateLoanPayload` unless the codebase is intentionally changed.
 - `ReturnLoanDTO`: optional `returnDate`; without it the API registers the return with today's date.
 - Loan statuses currently use the literal values `'ATIVO'`, `'CONCLUIDO'` and `'ATRASADO'` (`LoanStatus`). The backend derives the status from the dates; the frontend only displays it.
@@ -51,7 +51,7 @@ The current types are the source of truth:
 - Notifications use `notifySuccess` and `notifyError`, and form submit errors use `handleFormError` (it puts the API `fields` on the form inputs). All of them are in `src/utils/feedback.ts`; do not call `notifications.show` elsewhere. If a form field has a different name in the API, pass an alias map (see `BOOK_FIELD_ALIASES` in `bookService.ts`).
 - `src/hooks/useLibraryData.ts` loads all resources when the app opens and exposes `refresh(resources)`. After each mutation, refresh only the affected resources (see `BOOK_RESOURCES`, `AUTHOR_RESOURCES`, `USER_RESOURCES` and `LOAN_RESOURCES` in `src/App.tsx`).
 - Business rules (loan status, `debtFree`, `available`, CPF validation, overdue blocking) belong to the backend. The frontend only mirrors simple validations for usability and shows the API messages.
-- `src/services/mockData.ts` is kept only as a reference and is not imported. Do not import it, and do not use it to fake API data.
+- `src/services/mockApi.ts` is imported only by `api.ts` when `VITE_API_MOCK=true`. Normal builds use the real HTTP API; do not call mock-specific code from components, pages or hooks.
 
 ### Dates
 
@@ -73,17 +73,17 @@ The current types are the source of truth:
 - `src/App.tsx`: main application component (`AppShell`, navigation between screens, form modals and delete flow).
 - `src/main.tsx`: React entry point, `MantineProvider`, notifications, Day.js locale and global Mantine styles.
 - `src/pages/`: one page component per screen (`DashboardPage`, `BooksPage`, `AuthorsPage`, `UsersPage` and `LoansPage`), plus the CSS modules for row hover actions.
-- `src/components/`: form modals (`BookFormModal`, `AuthorFormModal`, `UserFormModal`, `LoanFormModal` and `ReturnLoanModal`), each one next to its form hook (`useBookForm`, `useAuthorForm`, `useUserForm`, `useLoanForm` and `useReturnLoanForm`), plus `GenericModal`, `StatsCard` and `StatusContainer`.
-- `src/hooks/`: `useLibraryData.ts`, which loads and refreshes the API data.
-- `src/services/`: the API layer: `api.ts` (HTTP client, `ApiError`, error helpers) and one service per resource. `mockData.ts` is a leftover reference, not imported.
+- `src/components/`: form modals (`BookFormModal`, `AuthorFormModal`, `UserFormModal`, `LoanFormModal` and `ReturnLoanModal`), each one next to its form hook (`useBookForm`, `useAuthorForm`, `useUserForm`, `useLoanForm` and `useReturnLoanForm`), plus `GenericModal`, `SortableTableHeader`, `StatsCard` and `StatusContainer`.
+- `src/hooks/`: `useLibraryData.ts`, which loads and refreshes API data, and `useSortableData.ts`, which provides shared table sorting.
+- `src/services/`: the API layer: `api.ts` (HTTP client, `ApiError`, error helpers), one service per resource and the optional `mockApi.ts` implementation.
 - `src/types/`: shared domain types and DTOs (`book.ts`, `loan.ts` and `user.ts`).
 - `src/utils/`: `feedback.ts` (notifications and API field errors in forms) and `format.ts` (dates and CPF).
-- `src/vite-env.d.ts`: types for `import.meta.env` (`VITE_API_URL`).
+- `src/vite-env.d.ts`: types for `import.meta.env` (`VITE_API_URL`, `VITE_API_MOCK`).
 - `src/assets/`: assets imported by source code. The folder does not exist yet; create it when needed.
 - `docs/`: documentation (in Portuguese, grouped by area, indexed in `docs/INDEX.md`) and project assets, including the DER image.
 - `public/`: static files served directly by Vite.
 - `nginx/default.conf.template`, `Dockerfile` and `scripts/build-image.sh`: production image (Nginx serving the SPA and proxying `/api`). Details in `docs/docker/imagem.md`.
-- `vite.config.ts` and `.env.example`: dev/preview proxy (`VITE_PROXY_TARGET`) and environment variables.
+- `vite.config.ts` and `.env.example`: dev/preview proxy (`VITE_PROXY_TARGET`) and environment variables (`VITE_API_URL`, `VITE_API_MOCK`).
 - Create new folders under `src/` only when a feature needs them.
 
 ## Working rules for AI

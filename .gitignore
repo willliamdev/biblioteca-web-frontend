@@ -26,6 +26,4 @@ dist-ssr
 # Imagens Docker geradas por scripts/build-image.sh
 images/
 
-# Dados mock locais
-/src/services/mockData.ts
 .env

@@ -19,6 +19,10 @@ A URL base vem de `VITE_API_URL` (padrão `/api`; barras no final são removidas
 | `npm run dev` (porta 5173) e `npm run preview` (porta 4173) | Vite (`server.proxy` e `preview.proxy`) | `VITE_PROXY_TARGET` (padrão `http://localhost:8080`) | `.env.local` ou variável de ambiente |
 | Imagem Docker e stack do compose | Nginx (`location /api/`) | `API_UPSTREAM` (padrão `http://library-backend:8080`) | `-e API_UPSTREAM=...` ou `environment` do compose |
 
+### Modo mock local
+
+`VITE_API_MOCK=true` faz `src/services/api.ts` usar `src/services/mockApi.ts` em vez do `fetch` HTTP. Esse modo mantém dados em memória e é opcional; o comportamento normal continua usando a API real em `/api`.
+
 Evite uma URL absoluta em `VITE_API_URL`: o navegador passaria a chamar o backend direto, sem proxy, e só funcionaria se a origem do frontend estivesse na lista de CORS do backend (`app.cors.allowed-origins`, padrão `http://localhost:5173` e `http://localhost:4173`).
 
 ### Por que o header `Origin` é removido
