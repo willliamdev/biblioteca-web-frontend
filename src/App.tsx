@@ -321,6 +321,12 @@ export default function App() {
 
       <AppShell.Main flex={1}>
         <div style={{ width: '100%', height: '100%', maxWidth: 1100, margin: '20px auto 0px' }}>
+          {import.meta.env.VITE_API_MOCK === 'true' ? (
+            <Alert color="orange" title="Modo de demonstração" mb="md">
+              Você está usando dados simulados. As alterações não são salvas e serão perdidas ao
+              atualizar a página.
+            </Alert>
+          ) : null}
           {renderContent()}
         </div>
       </AppShell.Main>
